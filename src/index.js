@@ -8,6 +8,7 @@ import { scanGigs } from './commands/scan.js';
 import { proposeGig } from './commands/propose.js';
 import { showStatus } from './commands/status.js';
 import { deliverProject } from './commands/deliver.js';
+import { autopilotStart, autopilotStop, autopilotStatus, autopilotConfig, autopilotLogs, autopilotRunNow } from './commands/autopilot.js';
 import { getConfig } from './utils/config.js';
 
 const VERSION = '0.1.0';
@@ -91,6 +92,41 @@ program
     await showStatus(config);
   });
 
+// Autopilot command group
+const autopilot = program
+  .command('autopilot')
+  .description('Manage the autonomous hustle daemon');
+
+autopilot
+  .command('start')
+  .description('Start the autopilot daemon')
+  .action(autopilotStart);
+
+autopilot
+  .command('stop')
+  .description('Stop the autopilot daemon')
+  .action(autopilotStop);
+
+autopilot
+  .command('status')
+  .description('Show autopilot pipeline and daemon status')
+  .action(autopilotStatus);
+
+autopilot
+  .command('config')
+  .description('Configure autopilot settings')
+  .action(autopilotConfig);
+
+autopilot
+  .command('logs')
+  .description('View autopilot activity logs')
+  .action(autopilotLogs);
+
+autopilot
+  .command('run-now')
+  .description('Trigger an immediate scan + propose cycle')
+  .action(autopilotRunNow);
+
 // Default: show help if no command
 if (process.argv.length <= 2) {
   console.log(banner);
@@ -106,6 +142,12 @@ if (process.argv.length <= 2) {
   console.log(chalk.white('  3.') + chalk.gray(' hustlebot propose  ') + chalk.dim('→ Write a killer proposal'));
   console.log(chalk.white('  4.') + chalk.gray(' hustlebot deliver  ') + chalk.dim('→ Scaffold & deliver work'));
   console.log(chalk.white('  5.') + chalk.gray(' hustlebot status   ') + chalk.dim('→ See your dashboard'));
+  console.log();
+  console.log(chalk.hex('#FF6B00')('  Autopilot:'));
+  console.log(chalk.gray('  ─────────────────────────────────────'));
+  console.log(chalk.white('  6.') + chalk.gray(' hustlebot autopilot config ') + chalk.dim('→ Set up automation'));
+  console.log(chalk.white('  7.') + chalk.gray(' hustlebot autopilot start  ') + chalk.dim('→ Start the daemon'));
+  console.log(chalk.white('  8.') + chalk.gray(' hustlebot autopilot status ') + chalk.dim('→ Pipeline overview'));
   console.log();
   process.exit(0);
 }

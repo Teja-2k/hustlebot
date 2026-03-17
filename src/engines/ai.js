@@ -175,3 +175,56 @@ Output ONLY valid JSON.`
     return null;
   }
 }
+
+export async function classifyGigType(gig) {
+  const claude = getClient();
+
+  const response = await claude.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 200,
+    messages: [{
+      role: 'user',
+      content: `Classify this freelance gig into one type. Respond ONLY in JSON.
+
+GIG: ${gig.title}
+DESCRIPTION: ${gig.description?.substring(0, 300)}
+
+{"type": "code"|"writing"|"data"|"design"|"other", "deliverable": "<what needs to be built/delivered>"}`
+    }]
+  });
+
+  try {
+    const text = response.content[0].text.trim();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+  } catch {}
+
+  return { type: 'other', deliverable: 'unknown' };
+}
+
+export async function assessDeliverability(gig, profile) {
+  const claude = getClient();
+
+  const response = await claude.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 200,
+    messages: [{
+      role: 'user',
+      content: `Can an AI coding agent (Claude Code) autonomously deliver this gig? Consider scope, complexity, and whether it needs human judgment. Respond ONLY in JSON.
+
+GIG: ${gig.title}
+DESCRIPTION: ${gig.description?.substring(0, 400)}
+FREELANCER SKILLS: ${profile.skills.join(', ')}
+
+{"canAutoDeliver": true|false, "confidence": <0-100>, "reason": "<1 line>"}`
+    }]
+  });
+
+  try {
+    const text = response.content[0].text.trim();
+    const match = text.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+  } catch {}
+
+  return { canAutoDeliver: false, confidence: 0, reason: 'Unable to assess' };
+}
