@@ -73,7 +73,7 @@ HustleBot fixes all three:
 npx hustlebot
 
 # Or clone and run
-git clone https://github.com/YOUR_USERNAME/hustlebot.git
+git clone https://github.com/Teja-2k/hustlebot.git
 cd hustlebot
 npm install
 npm link
@@ -111,6 +111,12 @@ hustlebot status
 | `hustlebot propose <#> --tone bold` | Generate with different tone (professional/casual/bold) |
 | `hustlebot deliver <#>` | Create project workspace + CLAUDE.md for Claude Code |
 | `hustlebot status` | View your earnings dashboard and pipeline |
+| `hustlebot autopilot config` | Configure autopilot settings (autonomy level, Discord webhook) |
+| `hustlebot autopilot start` | Start the background autopilot daemon |
+| `hustlebot autopilot stop` | Stop the autopilot daemon |
+| `hustlebot autopilot status` | View pipeline state + daemon status |
+| `hustlebot autopilot run-now` | Trigger an immediate scan + propose cycle |
+| `hustlebot autopilot logs` | View autopilot activity logs |
 
 ---
 
@@ -142,6 +148,34 @@ Claude analyzes the job description, cross-references your profile, and generate
 
 Just `cd` into the project and run `claude` to start building.
 
+### 5. Autopilot → Full Automation
+
+```bash
+# Configure autonomy level + Discord notifications
+hustlebot autopilot config
+
+# Start the daemon
+hustlebot autopilot start
+
+# Check your pipeline
+hustlebot autopilot status
+```
+
+Three autonomy levels:
+
+| Level | Behavior |
+|-------|----------|
+| **Supervised** | Auto-scan + score + draft proposals. Pauses for your approval before submitting. |
+| **Semi-Auto** | Auto-submits proposals for gigs scoring 85+. Pauses for 70-84. Skips below 70. |
+| **Full-Auto** | Auto-submits all 70+. Auto-delivers won gigs using Claude Code headless. You get summary notifications. |
+
+The pipeline tracks every gig through its lifecycle:
+```
+DISCOVERED → SCORED → PROPOSAL_DRAFT → SUBMITTED → WON → DELIVERING → DELIVERED → PAID
+```
+
+Discord notifications keep you informed without needing to check the terminal.
+
 ---
 
 ## The Stack
@@ -149,9 +183,11 @@ Just `cd` into the project and run `claude` to start building.
 - **Runtime:** Node.js (ES modules)
 - **AI:** Claude Sonnet 4 via Anthropic SDK
 - **Scraping:** Cheerio + fetch
+- **Scheduling:** node-schedule (cron-like daemon)
+- **Notifications:** Discord webhooks
 - **UI:** Chalk, Boxen, Inquirer, cli-table3
 - **Storage:** Local YAML/JSON in ~/.hustlebot/
-- **Delivery:** Claude Code integration
+- **Delivery:** Claude Code headless mode
 
 ---
 
@@ -165,13 +201,17 @@ Just `cd` into the project and run `claude` to start building.
 - [x] AI proposal generation
 - [x] Project delivery scaffolding
 - [x] Dashboard
-- [ ] `--watch` mode (continuous scanning)
-- [ ] Telegram notifications for hot leads
+- [x] Autopilot daemon (background scan/propose/deliver cycles)
+- [x] Gig pipeline state machine
+- [x] Discord webhook notifications
+- [x] Three autonomy levels (supervised/semi-auto/full-auto)
+- [x] Deduplication across scan cycles
+- [x] Auto-delivery via Claude Code headless
 - [ ] Freelancer.com scanner
 - [ ] LinkedIn scanner
+- [ ] Telegram notifications
 - [ ] Proposal templates library
 - [ ] Earnings tracking + analytics
-- [ ] Auto-apply mode (with approval gates)
 - [ ] Team mode (multiple profiles)
 
 ---
