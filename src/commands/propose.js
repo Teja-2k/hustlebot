@@ -80,7 +80,7 @@ export async function proposeGig(gigId, opts, config) {
           } else if (platform === 'linux') {
             execSync('xclip -selection clipboard', { input: proposal });
           } else if (platform === 'win32') {
-            execSync('clip', { input: proposal });
+            execSync('powershell.exe -command "Set-Clipboard -Value $input"', { input: proposal });
           }
           console.log(chalk.green('\n  ✓ Copied to clipboard!\n'));
         } catch {
