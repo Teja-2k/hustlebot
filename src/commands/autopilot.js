@@ -46,6 +46,9 @@ export async function autopilotStart() {
   if (config.discord_webhook) {
     console.log(chalk.gray('  Discord notifications: enabled'));
   }
+  if (config.telegram_bot_token) {
+    console.log(chalk.gray('  Telegram notifications: enabled'));
+  }
   console.log();
   console.log(chalk.gray('  View logs: ') + chalk.white('hustlebot autopilot logs'));
   console.log(chalk.gray('  Check status: ') + chalk.white('hustlebot autopilot status'));
@@ -86,6 +89,7 @@ export async function autopilotStatus() {
   console.log(chalk.white('  Autonomy: ') + chalk.cyan(autonomyLabels[config.autonomy_level] || 'Supervised'));
   console.log(chalk.white('  Scan interval: ') + chalk.gray(`every ${config.scan_interval_hours}h`));
   console.log(chalk.white('  Discord: ') + chalk.gray(config.discord_webhook ? 'connected' : 'not configured'));
+  console.log(chalk.white('  Telegram: ') + chalk.gray(config.telegram_bot_token ? 'connected' : 'not configured'));
   console.log();
 
   // Pipeline stats
@@ -138,8 +142,21 @@ export async function autopilotConfig() {
     {
       type: 'input',
       name: 'discord_webhook',
-      message: chalk.white('Discord webhook URL') + chalk.gray(' (for notifications):'),
+      message: chalk.white('Discord webhook URL') + chalk.gray(' (leave blank to skip):'),
       default: current.discord_webhook || '',
+    },
+    {
+      type: 'input',
+      name: 'telegram_bot_token',
+      message: chalk.white('Telegram bot token') + chalk.gray(' (from @BotFather, leave blank to skip):'),
+      default: current.telegram_bot_token || '',
+    },
+    {
+      type: 'input',
+      name: 'telegram_chat_id',
+      message: chalk.white('Telegram chat ID') + chalk.gray(' (your user/group ID):'),
+      default: current.telegram_chat_id || '',
+      when: (ans) => !!ans.telegram_bot_token,
     },
     {
       type: 'list',
@@ -174,6 +191,8 @@ export async function autopilotConfig() {
     enabled: true,
     autonomy_level: answers.autonomy_level,
     discord_webhook: answers.discord_webhook || null,
+    telegram_bot_token: answers.telegram_bot_token || null,
+    telegram_chat_id: answers.telegram_chat_id || null,
     scan_interval_hours: answers.scan_interval_hours,
     min_score_propose: parseInt(answers.min_score_propose),
     max_proposals_per_day: parseInt(answers.max_proposals_per_day),

@@ -1,4 +1,5 @@
 import { sendDiscordEmbed } from './discord.js';
+import { sendTelegramMessage } from './telegram.js';
 import { log } from '../utils/logger.js';
 
 let autopilotConfig = null;
@@ -72,7 +73,17 @@ export async function notify(event, data = {}) {
   const template = templates[event];
   if (!template) return;
 
+  const promises = [];
+
   if (webhookUrl) {
-    await sendDiscordEmbed(webhookUrl, template);
+    promises.push(sendDiscordEmbed(webhookUrl, template));
   }
+
+  const tgToken = autopilotConfig?.telegram_bot_token;
+  const tgChat = autopilotConfig?.telegram_chat_id;
+  if (tgToken && tgChat) {
+    promises.push(sendTelegramMessage(tgToken, tgChat, template));
+  }
+
+  if (promises.length) await Promise.allSettled(promises);
 }

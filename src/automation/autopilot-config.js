@@ -12,6 +12,8 @@ const DEFAULTS = {
   min_score_propose: 70,
   min_score_auto_submit: 85,
   discord_webhook: null,
+  telegram_bot_token: null,
+  telegram_chat_id: null,
   max_proposals_per_day: 10,
   max_concurrent_deliveries: 2,
   auto_deliver_types: ['code', 'data', 'writing'],
