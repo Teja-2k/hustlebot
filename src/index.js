@@ -9,6 +9,7 @@ import { proposeGig } from './commands/propose.js';
 import { showStatus } from './commands/status.js';
 import { deliverProject } from './commands/deliver.js';
 import { autopilotStart, autopilotStop, autopilotStatus, autopilotConfig, autopilotLogs, autopilotRunNow } from './commands/autopilot.js';
+import { launchDashboard } from './commands/dashboard.js';
 import { getConfig } from './utils/config.js';
 
 const VERSION = '0.1.0';
@@ -92,6 +93,14 @@ program
     await showStatus(config);
   });
 
+program
+  .command('dashboard')
+  .description('Open the web dashboard in your browser')
+  .option('-p, --port <port>', 'Port to run on', '3456')
+  .action(async (opts) => {
+    await launchDashboard(opts);
+  });
+
 // Autopilot command group
 const autopilot = program
   .command('autopilot')
@@ -143,11 +152,13 @@ if (process.argv.length <= 2) {
   console.log(chalk.white('  4.') + chalk.gray(' hustlebot deliver  ') + chalk.dim('→ Scaffold & deliver work'));
   console.log(chalk.white('  5.') + chalk.gray(' hustlebot status   ') + chalk.dim('→ See your dashboard'));
   console.log();
+  console.log(chalk.white('  6.') + chalk.gray(' hustlebot dashboard ') + chalk.dim('→ Open web dashboard'));
+  console.log();
   console.log(chalk.hex('#FF6B00')('  Autopilot:'));
   console.log(chalk.gray('  ─────────────────────────────────────'));
-  console.log(chalk.white('  6.') + chalk.gray(' hustlebot autopilot config ') + chalk.dim('→ Set up automation'));
-  console.log(chalk.white('  7.') + chalk.gray(' hustlebot autopilot start  ') + chalk.dim('→ Start the daemon'));
-  console.log(chalk.white('  8.') + chalk.gray(' hustlebot autopilot status ') + chalk.dim('→ Pipeline overview'));
+  console.log(chalk.white('  7.') + chalk.gray(' hustlebot autopilot config ') + chalk.dim('→ Set up automation'));
+  console.log(chalk.white('  8.') + chalk.gray(' hustlebot autopilot start  ') + chalk.dim('→ Start the daemon'));
+  console.log(chalk.white('  9.') + chalk.gray(' hustlebot autopilot status ') + chalk.dim('→ Pipeline overview'));
   console.log();
   process.exit(0);
 }

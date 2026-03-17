@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HustleBot Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --border: #1e1e2e;
+      --accent: #ff6b00;
+      --accent2: #ff8c33;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --dim: #334155;
+    }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #12121a 0%, #1a1020 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--text); font-weight: 400; }
+    .daemon-badge {
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .daemon-badge.running { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .daemon-badge.stopped { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+    .daemon-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .daemon-badge.running .daemon-dot { background: var(--green); animation: pulse 2s infinite; }
+    .daemon-badge.stopped .daemon-dot { background: var(--red); }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.2rem;
+      transition: border-color 0.2s;
+    }
+    .stat-card:hover { border-color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.blue { color: var(--blue); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* Main grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title { font-weight: 700; font-size: 0.95rem; }
+    .card-body { padding: 1rem 1.2rem; }
+
+    /* Pipeline funnel */
+    .pipeline-stage {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pipeline-stage:last-child { border-bottom: none; }
+    .stage-name { font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+    .stage-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .stage-count {
+      font-weight: 700;
+      font-size: 1.1rem;
+      min-width: 40px;
+      text-align: right;
+    }
+    .stage-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 1rem;
+      overflow: hidden;
+    }
+    .stage-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* Gig list */
+    .gig-item {
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: default;
+    }
+    .gig-item:last-child { border-bottom: none; }
+    .gig-top { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
+    .gig-score {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      min-width: 38px;
+      text-align: center;
+    }
+    .score-high { background: rgba(34,197,94,0.2); color: var(--green); }
+    .score-med { background: rgba(245,158,11,0.2); color: var(--yellow); }
+    .score-low { background: rgba(239,68,68,0.2); color: var(--red); }
+    .gig-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .gig-meta { font-size: 0.72rem; color: var(--muted); display: flex; gap: 1rem; }
+    .platform-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .platform-upwork { background: rgba(34,197,94,0.15); color: var(--green); }
+    .platform-twitter { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .platform-hackernews { background: rgba(255,107,0,0.15); color: var(--accent); }
+
+    /* Config panel */
+    .config-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .config-row:last-child { border-bottom: none; }
+    .config-key { color: var(--muted); }
+    .config-val { font-weight: 600; }
+
+    /* Logs */
+    .logs-box {
+      background: #080810;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      color: var(--muted);
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .logs-box .log-info { color: var(--blue); }
+    .logs-box .log-warn { color: var(--yellow); }
+    .logs-box .log-error { color: var(--red); }
+
+    /* Proposal list */
+    .proposal-item {
+      padding: 0.7rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .proposal-item:last-child { border-bottom: none; }
+    .proposal-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .proposal-meta { font-size: 0.72rem; color: var(--muted); }
+    .status-badge {
+      font-size: 0.65rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .status-sent { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .status-won { background: rgba(34,197,94,0.15); color: var(--green); }
+    .status-lost { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    /* Full width card */
+    .full-width { grid-column: 1 / -1; }
+
+    /* Profile */
+    .profile-info { display: flex; align-items: center; gap: 1rem; }
+    .profile-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 700;
+    }
+    .profile-name { font-weight: 700; font-size: 1.1rem; }
+    .profile-title { color: var(--muted); font-size: 0.85rem; }
+
+    .refresh-btn {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      padding: 0.3rem 0.8rem; border-radius: 6px; cursor: pointer;
+      font-size: 0.75rem; transition: all 0.2s;
+    }
+    .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .empty-state { text-align: center; padding: 2rem; color: var(--dim); font-size: 0.85rem; }
+
+    /* Autonomy level */
+    .autonomy-badge {
+      padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
+    }
+    .autonomy-1 { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .autonomy-2 { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .autonomy-3 { background: rgba(239,68,68,0.15); color: var(--red); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">HUSTLEBOT <span>Dashboard</span></div>
+    <div style="display:flex;gap:1rem;align-items:center">
+      <button class="refresh-btn" onclick="loadData()">Refresh</button>
+      <div id="daemon-badge" class="daemon-badge stopped">
+        <div class="daemon-dot"></div>
+        <span>STOPPED</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Pipeline Gigs</div>
+        <div class="stat-value accent" id="stat-pipeline">0</div>
+        <div class="stat-sub" id="stat-pipeline-sub">across all stages</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Proposals Sent</div>
+        <div class="stat-value blue" id="stat-proposals">0</div>
+        <div class="stat-sub" id="stat-proposals-sub">lifetime</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Gigs Won</div>
+        <div class="stat-value green" id="stat-won">0</div>
+        <div class="stat-sub" id="stat-won-sub">win rate: --</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Earnings</div>
+        <div class="stat-value yellow" id="stat-earnings">$0</div>
+        <div class="stat-sub">tracked revenue</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Gigs Seen</div>
+        <div class="stat-value" style="color:var(--purple)" id="stat-seen">0</div>
+        <div class="stat-sub">deduplicated</div>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="main-grid">
+      <!-- Pipeline Funnel -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Pipeline</span>
+          <span id="autonomy-badge" class="autonomy-badge autonomy-1">Supervised</span>
+        </div>
+        <div class="card-body" id="pipeline-body"></div>
+      </div>
+
+      <!-- Top Gigs -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Top Scoring Gigs</span>
+          <span style="font-size:0.75rem;color:var(--muted)" id="gig-count">0 gigs</span>
+        </div>
+        <div class="card-body" id="gigs-body" style="max-height:400px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Proposals -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Proposals</span>
+        </div>
+        <div class="card-body" id="proposals-body" style="max-height:350px;overflow-y:auto"></div>
+      </div>
+
+      <!-- Config -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Configuration</span>
+        </div>
+        <div class="card-body" id="config-body"></div>
+      </div>
+
+      <!-- Logs -->
+      <div class="card full-width">
+        <div class="card-header">
+          <span class="card-title">Autopilot Logs</span>
+          <span style="font-size:0.72rem;color:var(--muted)">last 50 lines</span>
+        </div>
+        <div class="card-body">
+          <div class="logs-box" id="logs-body"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STAGES = [
+      { key: 'DISCOVERED', label: 'Discovered', color: '#64748b' },
+      { key: 'SCORED', label: 'Scored', color: '#3b82f6' },
+      { key: 'PROPOSAL_DRAFT', label: 'Proposal Draft', color: '#f59e0b' },
+      { key: 'PROPOSAL_REVIEW', label: 'Needs Review', color: '#f59e0b' },
+      { key: 'SUBMITTED', label: 'Submitted', color: '#22c55e' },
+      { key: 'WAITING', label: 'Waiting', color: '#3b82f6' },
+      { key: 'WON', label: 'Won', color: '#22c55e' },
+      { key: 'DELIVERING', label: 'Delivering', color: '#a855f7' },
+      { key: 'DELIVERED', label: 'Delivered', color: '#22c55e' },
+      { key: 'PAID', label: 'Paid', color: '#ffd700' },
+      { key: 'LOST', label: 'Lost', color: '#ef4444' },
+      { key: 'SKIPPED', label: 'Skipped', color: '#64748b' },
+    ];
+
+    const AUTONOMY_LABELS = { 1: 'Supervised', 2: 'Semi-Auto', 3: 'Full-Auto' };
+
+    async function loadData() {
+      try {
+        const res = await fetch('/api/dashboard');
+        const data = await res.json();
+        render(data);
+      } catch (e) {
+        console.error('Failed to load dashboard data:', e);
+      }
+    }
+
+    function render(data) {
+      // Daemon badge
+      const badge = document.getElementById('daemon-badge');
+      if (data.autopilot?.daemonRunning) {
+        badge.className = 'daemon-badge running';
+        badge.innerHTML = '<div class="daemon-dot"></div><span>RUNNING</span>';
+      } else {
+        badge.className = 'daemon-badge stopped';
+        badge.innerHTML = '<div class="daemon-dot"></div><span>STOPPED</span>';
+      }
+
+      // Stats
+      const totalPipeline = data.pipeline?.length || 0;
+      document.getElementById('stat-pipeline').textContent = totalPipeline;
+      document.getElementById('stat-proposals').textContent = data.stats?.proposalsSent || 0;
+      document.getElementById('stat-won').textContent = data.stats?.proposalsWon || 0;
+      document.getElementById('stat-earnings').textContent = '$' + (data.stats?.totalEarnings || 0).toLocaleString();
+      document.getElementById('stat-seen').textContent = data.seenGigs || 0;
+
+      const sent = data.stats?.proposalsSent || 0;
+      const won = data.stats?.proposalsWon || 0;
+      document.getElementById('stat-won-sub').textContent = sent > 0 ? `win rate: ${Math.round(won/sent*100)}%` : 'win rate: --';
+
+      // Autonomy badge
+      const level = data.autopilot?.autonomy_level || 1;
+      const abadge = document.getElementById('autonomy-badge');
+      abadge.className = `autonomy-badge autonomy-${level}`;
+      abadge.textContent = AUTONOMY_LABELS[level] || 'Supervised';
+
+      // Pipeline funnel
+      const pStats = data.pipelineStats || {};
+      const maxCount = Math.max(1, ...STAGES.map(s => pStats[s.key] || 0));
+      let pipelineHTML = '';
+      for (const stage of STAGES) {
+        const count = pStats[stage.key] || 0;
+        const pct = (count / maxCount * 100).toFixed(0);
+        pipelineHTML += `
+          <div class="pipeline-stage">
+            <div class="stage-name" style="min-width:120px">
+              <div class="stage-dot" style="background:${stage.color}"></div>
+              ${stage.label}
+            </div>
+            <div class="stage-bar">
+              <div class="stage-bar-fill" style="width:${pct}%;background:${stage.color}"></div>
+            </div>
+            <div class="stage-count" style="color:${count > 0 ? stage.color : 'var(--dim)'}">${count}</div>
+          </div>`;
+      }
+      document.getElementById('pipeline-body').innerHTML = pipelineHTML;
+
+      // Top gigs (sorted by score)
+      const pipeline = (data.pipeline || []).sort((a, b) => (b.score || 0) - (a.score || 0));
+      document.getElementById('gig-count').textContent = `${pipeline.length} gigs`;
+      if (pipeline.length === 0) {
+        document.getElementById('gigs-body').innerHTML = '<div class="empty-state">No gigs yet. Run hustlebot autopilot run-now</div>';
+      } else {
+        let gigsHTML = '';
+        for (const entry of pipeline.slice(0, 20)) {
+          const g = entry.gig;
+          const score = entry.score || 0;
+          const scoreClass = score >= 80 ? 'score-high' : score >= 60 ? 'score-med' : 'score-low';
+          const platform = (g.platform || 'unknown').toLowerCase();
+          const platformClass = platform.includes('upwork') ? 'platform-upwork' : platform.includes('twitter') ? 'platform-twitter' : 'platform-hackernews';
+          gigsHTML += `
+            <div class="gig-item">
+              <div class="gig-top">
+                <span class="gig-score ${scoreClass}">${score}%</span>
+                <span class="platform-badge ${platformClass}">${g.platform || '?'}</span>
+                <span class="gig-title">${escapeHtml(g.title || 'Untitled')}</span>
+              </div>
+              <div class="gig-meta">
+                <span>${g.budget || 'Budget TBD'}</span>
+                <span>${entry.state}</span>
+              </div>
+            </div>`;
+        }
+        document.getElementById('gigs-body').innerHTML = gigsHTML;
+      }
+
+      // Proposals
+      const proposals = data.proposals || [];
+      if (proposals.length === 0) {
+        document.getElementById('proposals-body').innerHTML = '<div class="empty-state">No proposals yet</div>';
+      } else {
+        let propHTML = '';
+        for (const p of proposals.slice(-10).reverse()) {
+          const statusClass = p.status === 'won' ? 'status-won' : p.status === 'lost' ? 'status-lost' : 'status-sent';
+          propHTML += `
+            <div class="proposal-item">
+              <div class="proposal-title">${escapeHtml(p.gig_title || 'Untitled')}</div>
+              <div class="proposal-meta">
+                <span class="status-badge ${statusClass}">${p.status || 'draft'}</span>
+                ${p.platform || ''} &middot; ${p.tone || 'professional'} &middot; ${p.sent_at ? new Date(p.sent_at).toLocaleDateString() : ''}
+              </div>
+            </div>`;
+        }
+        document.getElementById('proposals-body').innerHTML = propHTML;
+      }
+
+      // Config
+      const ap = data.autopilot || {};
+      const configRows = [
+        ['Autonomy Level', AUTONOMY_LABELS[ap.autonomy_level] || 'Supervised'],
+        ['Scan Interval', `Every ${ap.scan_interval_hours || 2}h`],
+        ['Min Score (Propose)', `${ap.min_score_propose || 70}%`],
+        ['Min Score (Auto-Submit)', `${ap.min_score_auto_submit || 85}%`],
+        ['Max Proposals/Day', ap.max_proposals_per_day || 10],
+        ['Discord', ap.discord_webhook ? 'Connected' : 'Not configured'],
+        ['Telegram', ap.telegram_bot_token ? 'Connected' : 'Not configured'],
+        ['Auto-Deliver Types', (ap.auto_deliver_types || []).join(', ')],
+      ];
+      let configHTML = '';
+      for (const [k, v] of configRows) {
+        const color = v === 'Connected' ? 'color:var(--green)' : v === 'Not configured' ? 'color:var(--dim)' : '';
+        configHTML += `<div class="config-row"><span class="config-key">${k}</span><span class="config-val" style="${color}">${v}</span></div>`;
+      }
+      document.getElementById('config-body').innerHTML = configHTML;
+
+      // Logs
+      const logs = data.logs || 'No logs yet.';
+      const coloredLogs = logs
+        .replace(/\[INFO\]/g, '<span class="log-info">[INFO]</span>')
+        .replace(/\[WARN\]/g, '<span class="log-warn">[WARN]</span>')
+        .replace(/\[ERROR\]/g, '<span class="log-error">[ERROR]</span>');
+      document.getElementById('logs-body').innerHTML = coloredLogs;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Initial load + auto-refresh every 30s
+    loadData();
+    setInterval(loadData, 30000);
+  </script>
+</body>
+</html>
