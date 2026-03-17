@@ -10,6 +10,7 @@ import { showStatus } from './commands/status.js';
 import { deliverProject } from './commands/deliver.js';
 import { autopilotStart, autopilotStop, autopilotStatus, autopilotConfig, autopilotLogs, autopilotRunNow } from './commands/autopilot.js';
 import { launchDashboard } from './commands/dashboard.js';
+import { authPlatform } from './commands/auth.js';
 import { getConfig } from './utils/config.js';
 
 const VERSION = '0.1.0';
@@ -93,8 +94,7 @@ program
     await showStatus(config);
   });
 
-program
-  .command('dashboard')
+undefined
   .description('Open the web dashboard in your browser')
   .option('-p, --port <port>', 'Port to run on', '3456')
   .action(async (opts) => {

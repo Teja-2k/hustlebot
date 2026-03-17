@@ -33,11 +33,13 @@ export async function startDaemon() {
   schedule.scheduleJob('scan', scanCron, () => runScanCycle(autopilotConfig));
   schedule.scheduleJob('propose', '*/30 * * * *', () => runProposeCycle(autopilotConfig));
   schedule.scheduleJob('deliver', '*/15 * * * *', () => runDeliveryCycle(autopilotConfig));
+  schedule.scheduleJob('messages', '*/10 * * * *', () => runMessageCycle(autopilotConfig));
 
   log('[DAEMON] Scheduler started. Jobs:');
   log(`  - Scan: ${scanCron}`);
   log(`  - Propose: every 30 min`);
   log(`  - Deliver: every 15 min`);
+  log(`  - Messages: every 10 min`);
 
   await notify('CYCLE_SUMMARY', { scanned: 0, newGigs: 0, proposed: 0 });
 
@@ -245,6 +247,48 @@ async function runDeliveryCycle(autopilotConfig) {
     }
   } catch (err) {
     logError(`[DELIVER] Cycle error: ${err.message}`);
+  }
+}
+
+async function runMessageCycle(autopilotConfig) {
+  try {
+    const autonomy = autopilotConfig.autonomy_level || 1;
+    if (autonomy < 2) return; // Only semi-auto and full-auto monitor messages
+
+    const { checkUpworkMessages } = await import('../browser/message-monitor.js');
+    const messages = await checkUpworkMessages();
+
+    if (messages.length === 0) return;
+
+    log(`[MESSAGES] ${messages.length} new messages`);
+
+    // For full-auto, classify and auto-reply to simple messages
+    if (autonomy >= 3) {
+      const { classifyMessage, generateClientReply } = await import('../engines/client-ai.js');
+      const config = getConfig();
+
+      for (const msg of messages) {
+        const classification = await classifyMessage(msg, null);
+
+        if (classification.autoReplyOk && !classification.escalate) {
+          const reply = await generateClientReply(msg, null, config.profile);
+          log(`[MESSAGES] Auto-reply to ${msg.from}: ${reply.substring(0, 100)}`);
+          await notify('CLIENT_REPLY_SENT', {
+            clientName: msg.from,
+            replyPreview: reply,
+          });
+        } else if (classification.escalate || classification.urgency === 'high') {
+          await notify('NEW_MESSAGES', {
+            count: 1,
+            messages: `URGENT from ${msg.from}: ${msg.preview}`,
+          });
+        }
+
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+  } catch (err) {
+    warn(`[MESSAGES] Cycle error: ${err.message}`);
   }
 }
 

@@ -43,6 +43,7 @@
     "node-schedule": "^2.1.1",
     "open": "^10.1.0",
     "ora": "^8.0.1",
+    "puppeteer-core": "^24.39.1",
     "yaml": "^2.4.0"
   },
   "engines": {

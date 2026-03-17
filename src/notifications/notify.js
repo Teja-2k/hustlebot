@@ -63,6 +63,22 @@ export async function notify(event, data = {}) {
       description: `Scanned: ${data.scanned || 0} | New: ${data.newGigs || 0} | Proposed: ${data.proposed || 0}`,
       color: 0x95A5A6,
     },
+    NEW_MESSAGES: {
+      title: `💬 ${data.count || 0} New Client Messages`,
+      description: data.messages || 'New messages from clients.',
+      color: 0x9B59B6,
+    },
+    CLIENT_REPLY_SENT: {
+      title: `↩️ Auto-Reply Sent`,
+      description: `**${data.clientName || 'Client'}**\n${data.replyPreview?.substring(0, 200) || ''}`,
+      color: 0x3498DB,
+    },
+    DELIVERY_REVIEW: {
+      title: `🔍 Delivery Review`,
+      description: `**${data.projectName}**\nQuality: ${data.quality} | Score: ${data.score}/100`,
+      color: data.quality === 'ready' ? 0x2ECC71 : 0xF39C12,
+      fields: (data.issues || []).length > 0 ? [{ name: 'Issues', value: data.issues.join(', ') }] : [],
+    },
     ERROR: {
       title: `⚠️ Autopilot Error`,
       description: data.message || 'An error occurred',
