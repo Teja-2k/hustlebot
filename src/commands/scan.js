@@ -4,6 +4,8 @@ import Table from 'cli-table3';
 import { scanUpwork } from '../scanners/upwork.js';
 import { scanTwitter } from '../scanners/twitter.js';
 import { scanHackerNews } from '../scanners/hackernews.js';
+import { scanFreelancer } from '../scanners/freelancer.js';
+import { scanFiverr } from '../scanners/fiverr.js';
 import { scoreGigMatch } from '../engines/ai.js';
 import { saveGigs, getApiKey } from '../utils/config.js';
 
@@ -38,6 +40,12 @@ export async function scanGigs(opts, config) {
           break;
         case 'hackernews':
           gigs = await scanHackerNews(keywords, { limit });
+          break;
+        case 'freelancer':
+          gigs = await scanFreelancer(keywords, { limit });
+          break;
+        case 'fiverr':
+          gigs = await scanFiverr(keywords, { limit });
           break;
         default:
           spinner.warn(`  ${platform} scanner not yet implemented`);

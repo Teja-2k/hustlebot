@@ -67,6 +67,16 @@ export function startDashboard(port = 3456) {
       try { process.kill(parseInt(pid), 0); daemonRunning = true; } catch {}
     }
 
+    // Earnings data
+    const payments = readJSON(join(HUSTLEBOT_DIR, 'payments.json'));
+    const deliveries = readJSON(join(HUSTLEBOT_DIR, 'deliveries', 'deliveries-index.json'));
+
+    const totalEarnings = payments.reduce((s, p) => s + (p.amount || 0), 0);
+    const totalNet = payments.reduce((s, p) => s + (p.net_amount || 0), 0);
+    const pipelineValue = (projects || [])
+      .filter(p => ['accepted', 'in_progress', 'delivered'].includes(p.status))
+      .reduce((s, p) => s + (p.agreed_amount || 0), 0);
+
     res.json({
       profile,
       autopilot: { ...autopilot, daemonRunning },
@@ -75,12 +85,18 @@ export function startDashboard(port = 3456) {
       gigs,
       proposals,
       projects,
+      payments,
+      deliveries: deliveries || [],
       seenGigs: seenGigs.length || 0,
       stats: {
-        totalEarnings: stats.totalEarnings || 0,
-        proposalsSent: stats.proposalsSent || 0,
-        proposalsWon: stats.proposalsWon || 0,
-        gigsCompleted: stats.gigsCompleted || 0,
+        totalEarnings,
+        totalNet,
+        pipelineValue,
+        proposalsSent: stats.proposalsSent || pipeline.length || 0,
+        proposalsWon: stats.proposalsWon || (projects || []).length || 0,
+        gigsCompleted: stats.gigsCompleted || (projects || []).filter(p => p.status === 'paid').length || 0,
+        paymentsCount: payments.length,
+        deliveriesCount: (deliveries || []).length,
       },
       logs,
     });
@@ -92,6 +108,34 @@ export function startDashboard(port = 3456) {
     const state = req.query.state;
     const filtered = state ? pipeline.filter(g => g.state === state) : pipeline;
     res.json(filtered.sort((a, b) => (b.score || 0) - (a.score || 0)));
+  });
+
+  // API: earnings data
+  app.get('/api/earnings', (req, res) => {
+    const payments = readJSON(join(HUSTLEBOT_DIR, 'payments.json'));
+    const projects = readJSON(join(HUSTLEBOT_DIR, 'projects.json'));
+    const period = req.query.period || 'all';
+
+    const now = new Date();
+    let startDate = new Date(0);
+    if (period === 'week') startDate = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    if (period === 'month') startDate = new Date(now - 30 * 24 * 60 * 60 * 1000);
+
+    const filteredPayments = payments.filter(p => new Date(p.received_at) >= startDate);
+
+    res.json({
+      total: filteredPayments.reduce((s, p) => s + p.amount, 0),
+      net: filteredPayments.reduce((s, p) => s + p.net_amount, 0),
+      fees: filteredPayments.reduce((s, p) => s + p.platform_fee, 0),
+      payments: filteredPayments,
+      projects: projects || [],
+    });
+  });
+
+  // API: deliveries
+  app.get('/api/deliveries', (req, res) => {
+    const deliveries = readJSON(join(HUSTLEBOT_DIR, 'deliveries', 'deliveries-index.json'));
+    res.json(deliveries || []);
   });
 
   const server = app.listen(port, () => {

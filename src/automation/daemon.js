@@ -2,6 +2,8 @@ import schedule from 'node-schedule';
 import { scanUpwork } from '../scanners/upwork.js';
 import { scanTwitter } from '../scanners/twitter.js';
 import { scanHackerNews } from '../scanners/hackernews.js';
+import { scanFreelancer } from '../scanners/freelancer.js';
+import { scanFiverr } from '../scanners/fiverr.js';
 import { scoreGigMatch, generateProposal, classifyGigType, assessDeliverability } from '../engines/ai.js';
 import { getConfig, getApiKey, saveGigs } from '../utils/config.js';
 import { filterNewGigs } from './dedup.js';
@@ -77,6 +79,8 @@ async function runScanCycle(autopilotConfig) {
           case 'upwork': gigs = await scanUpwork(keywords, { limit: 20 }); break;
           case 'twitter': gigs = await scanTwitter(keywords, { limit: 10 }); break;
           case 'hackernews': gigs = await scanHackerNews(keywords, { limit: 10 }); break;
+          case 'freelancer': gigs = await scanFreelancer(keywords, { limit: 15 }); break;
+          case 'fiverr': gigs = await scanFiverr(keywords, { limit: 10 }); break;
         }
         log(`[SCAN] ${platform}: ${gigs.length} gigs`);
         allGigs.push(...gigs);

@@ -60,10 +60,22 @@
 
     .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem 2rem; }
 
+    /* Tab nav */
+    .tab-nav { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+      padding: 0.7rem 1.5rem; background: none; border: none; color: var(--muted);
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
     /* Stats row */
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 1rem;
       margin-bottom: 1.5rem;
     }
@@ -75,181 +87,130 @@
       transition: border-color 0.2s;
     }
     .stat-card:hover { border-color: var(--accent); }
-    .stat-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
-    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.4rem; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; }
     .stat-value.accent { color: var(--accent); }
     .stat-value.green { color: var(--green); }
     .stat-value.blue { color: var(--blue); }
     .stat-value.yellow { color: var(--yellow); }
-    .stat-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+    .stat-sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
 
     /* Main grid */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
     @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .card-header {
-      padding: 1rem 1.2rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card-header { padding: 1rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .card-title { font-weight: 700; font-size: 0.95rem; }
     .card-body { padding: 1rem 1.2rem; }
 
-    /* Pipeline funnel */
-    .pipeline-stage {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.6rem 0;
-      border-bottom: 1px solid var(--border);
-    }
+    /* Pipeline */
+    .pipeline-stage { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
     .pipeline-stage:last-child { border-bottom: none; }
-    .stage-name { font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+    .stage-name { font-size: 0.8rem; display: flex; align-items: center; gap: 0.5rem; min-width: 110px; }
     .stage-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .stage-count {
-      font-weight: 700;
-      font-size: 1.1rem;
-      min-width: 40px;
-      text-align: right;
-    }
-    .stage-bar {
-      flex: 1;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      margin: 0 1rem;
-      overflow: hidden;
-    }
-    .stage-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width 0.5s ease;
-    }
+    .stage-count { font-weight: 700; font-size: 1rem; min-width: 35px; text-align: right; }
+    .stage-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; margin: 0 0.8rem; overflow: hidden; }
+    .stage-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
 
     /* Gig list */
-    .gig-item {
-      padding: 0.8rem 0;
-      border-bottom: 1px solid var(--border);
-      cursor: default;
-    }
+    .gig-item { padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
     .gig-item:last-child { border-bottom: none; }
-    .gig-top { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem; }
-    .gig-score {
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      min-width: 38px;
-      text-align: center;
-    }
+    .gig-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
+    .gig-score { font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 4px; min-width: 36px; text-align: center; }
     .score-high { background: rgba(34,197,94,0.2); color: var(--green); }
     .score-med { background: rgba(245,158,11,0.2); color: var(--yellow); }
     .score-low { background: rgba(239,68,68,0.2); color: var(--red); }
-    .gig-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-    .gig-meta { font-size: 0.72rem; color: var(--muted); display: flex; gap: 1rem; }
-    .platform-badge {
-      font-size: 0.65rem;
-      padding: 0.15rem 0.4rem;
-      border-radius: 3px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
+    .gig-title { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .gig-meta { font-size: 0.68rem; color: var(--muted); display: flex; gap: 0.8rem; }
+
+    .platform-badge { font-size: 0.6rem; padding: 0.12rem 0.35rem; border-radius: 3px; font-weight: 600; text-transform: uppercase; }
     .platform-upwork { background: rgba(34,197,94,0.15); color: var(--green); }
     .platform-twitter { background: rgba(59,130,246,0.15); color: var(--blue); }
     .platform-hackernews { background: rgba(255,107,0,0.15); color: var(--accent); }
+    .platform-freelancer { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .platform-fiverr { background: rgba(34,197,94,0.15); color: #1dbf73; }
 
-    /* Config panel */
-    .config-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-    }
+    /* Config */
+    .config-row { display: flex; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
     .config-row:last-child { border-bottom: none; }
     .config-key { color: var(--muted); }
     .config-val { font-weight: 600; }
 
     /* Logs */
     .logs-box {
-      background: #080810;
-      border-radius: 8px;
-      padding: 1rem;
-      font-family: 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 0.72rem;
-      line-height: 1.6;
-      color: var(--muted);
-      max-height: 300px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
+      background: #080810; border-radius: 8px; padding: 1rem;
+      font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.68rem; line-height: 1.6;
+      color: var(--muted); max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
     }
     .logs-box .log-info { color: var(--blue); }
     .logs-box .log-warn { color: var(--yellow); }
     .logs-box .log-error { color: var(--red); }
 
     /* Proposal list */
-    .proposal-item {
-      padding: 0.7rem 0;
-      border-bottom: 1px solid var(--border);
-    }
+    .proposal-item { padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
     .proposal-item:last-child { border-bottom: none; }
-    .proposal-title { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.2rem; }
-    .proposal-meta { font-size: 0.72rem; color: var(--muted); }
-    .status-badge {
-      font-size: 0.65rem;
-      padding: 0.15rem 0.4rem;
-      border-radius: 3px;
-      font-weight: 600;
-    }
+    .proposal-title { font-size: 0.8rem; font-weight: 600; margin-bottom: 0.15rem; }
+    .proposal-meta { font-size: 0.68rem; color: var(--muted); }
+
+    .status-badge { font-size: 0.6rem; padding: 0.12rem 0.35rem; border-radius: 3px; font-weight: 600; }
     .status-sent { background: rgba(59,130,246,0.15); color: var(--blue); }
     .status-won { background: rgba(34,197,94,0.15); color: var(--green); }
     .status-lost { background: rgba(239,68,68,0.15); color: var(--red); }
+    .status-accepted { background: rgba(245,158,11,0.15); color: var(--yellow); }
+    .status-in_progress { background: rgba(59,130,246,0.15); color: var(--blue); }
+    .status-delivered { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .status-paid { background: rgba(34,197,94,0.15); color: var(--green); }
 
-    /* Full width card */
     .full-width { grid-column: 1 / -1; }
 
     /* Profile */
     .profile-info { display: flex; align-items: center; gap: 1rem; }
     .profile-avatar {
-      width: 48px; height: 48px;
-      border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), var(--purple));
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; font-weight: 700;
+      font-size: 1.1rem; font-weight: 700;
     }
-    .profile-name { font-weight: 700; font-size: 1.1rem; }
-    .profile-title { color: var(--muted); font-size: 0.85rem; }
+    .profile-name { font-weight: 700; font-size: 1rem; }
+    .profile-title { color: var(--muted); font-size: 0.8rem; }
 
     .refresh-btn {
       background: none; border: 1px solid var(--border); color: var(--muted);
-      padding: 0.3rem 0.8rem; border-radius: 6px; cursor: pointer;
-      font-size: 0.75rem; transition: all 0.2s;
+      padding: 0.3rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.7rem; transition: all 0.2s;
     }
     .refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-    .empty-state { text-align: center; padding: 2rem; color: var(--dim); font-size: 0.85rem; }
+    .empty-state { text-align: center; padding: 2rem; color: var(--dim); font-size: 0.8rem; }
 
-    /* Autonomy level */
-    .autonomy-badge {
-      padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;
-    }
+    .autonomy-badge { padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600; }
     .autonomy-1 { background: rgba(59,130,246,0.15); color: var(--blue); }
     .autonomy-2 { background: rgba(245,158,11,0.15); color: var(--yellow); }
     .autonomy-3 { background: rgba(239,68,68,0.15); color: var(--red); }
+
+    /* Earnings chart */
+    .earnings-chart { height: 120px; display: flex; align-items: flex-end; gap: 2px; padding: 0.5rem 0; }
+    .chart-bar {
+      flex: 1; min-width: 3px; background: var(--accent); border-radius: 2px 2px 0 0;
+      opacity: 0.7; transition: opacity 0.2s;
+    }
+    .chart-bar:hover { opacity: 1; }
+    .chart-bar.zero { background: var(--border); opacity: 0.3; min-height: 2px; }
+
+    /* Project list */
+    .project-item { padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+    .project-item:last-child { border-bottom: none; }
+    .project-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
+    .project-title { font-size: 0.8rem; font-weight: 600; flex: 1; }
+    .project-amount { font-weight: 700; color: var(--green); font-size: 0.85rem; }
+    .project-meta { font-size: 0.68rem; color: var(--muted); }
+
+    /* Delivery list */
+    .delivery-item { padding: 0.6rem 0; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .delivery-item:last-child { border-bottom: none; }
+    .delivery-title { font-size: 0.8rem; font-weight: 600; }
+    .delivery-meta { font-size: 0.68rem; color: var(--muted); }
+    .delivery-files { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
   </style>
 </head>
 <body>
@@ -265,79 +226,188 @@
   </div>
 
   <div class="container">
-    <!-- Stats Row -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Pipeline Gigs</div>
-        <div class="stat-value accent" id="stat-pipeline">0</div>
-        <div class="stat-sub" id="stat-pipeline-sub">across all stages</div>
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab-btn" onclick="switchTab('pipeline')">Pipeline</button>
+      <button class="tab-btn" onclick="switchTab('earnings')">Earnings</button>
+      <button class="tab-btn" onclick="switchTab('deliveries')">Deliveries</button>
+      <button class="tab-btn" onclick="switchTab('logs')">Logs</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Pipeline Gigs</div>
+          <div class="stat-value accent" id="stat-pipeline">0</div>
+          <div class="stat-sub" id="stat-pipeline-sub">across all stages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Proposals Sent</div>
+          <div class="stat-value blue" id="stat-proposals">0</div>
+          <div class="stat-sub" id="stat-proposals-sub">lifetime</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Projects Won</div>
+          <div class="stat-value green" id="stat-won">0</div>
+          <div class="stat-sub" id="stat-won-sub">win rate: --</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Earnings</div>
+          <div class="stat-value yellow" id="stat-earnings">$0</div>
+          <div class="stat-sub" id="stat-earnings-sub">net revenue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pipeline Value</div>
+          <div class="stat-value" style="color:var(--purple)" id="stat-pipeline-value">$0</div>
+          <div class="stat-sub">in-progress work</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Gigs Seen</div>
+          <div class="stat-value" style="color:var(--muted)" id="stat-seen">0</div>
+          <div class="stat-sub">deduplicated</div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Proposals Sent</div>
-        <div class="stat-value blue" id="stat-proposals">0</div>
-        <div class="stat-sub" id="stat-proposals-sub">lifetime</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Gigs Won</div>
-        <div class="stat-value green" id="stat-won">0</div>
-        <div class="stat-sub" id="stat-won-sub">win rate: --</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Earnings</div>
-        <div class="stat-value yellow" id="stat-earnings">$0</div>
-        <div class="stat-sub">tracked revenue</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Gigs Seen</div>
-        <div class="stat-value" style="color:var(--purple)" id="stat-seen">0</div>
-        <div class="stat-sub">deduplicated</div>
+
+      <div class="main-grid">
+        <!-- Pipeline Funnel -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Pipeline Funnel</span>
+            <span id="autonomy-badge" class="autonomy-badge autonomy-1">Supervised</span>
+          </div>
+          <div class="card-body" id="pipeline-body"></div>
+        </div>
+
+        <!-- Top Gigs -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Top Scoring Gigs</span>
+            <span style="font-size:0.7rem;color:var(--muted)" id="gig-count">0 gigs</span>
+          </div>
+          <div class="card-body" id="gigs-body" style="max-height:380px;overflow-y:auto"></div>
+        </div>
+
+        <!-- Active Projects -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Active Projects</span>
+          </div>
+          <div class="card-body" id="projects-body" style="max-height:300px;overflow-y:auto"></div>
+        </div>
+
+        <!-- Config -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Configuration</span>
+          </div>
+          <div class="card-body" id="config-body"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="main-grid">
-      <!-- Pipeline Funnel -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Pipeline</span>
-          <span id="autonomy-badge" class="autonomy-badge autonomy-1">Supervised</span>
+    <!-- PIPELINE TAB -->
+    <div id="tab-pipeline" class="tab-content">
+      <div class="main-grid">
+        <div class="card full-width">
+          <div class="card-header">
+            <span class="card-title">All Pipeline Gigs</span>
+            <div style="display:flex;gap:0.5rem" id="pipeline-filters"></div>
+          </div>
+          <div class="card-body" id="full-pipeline-body" style="max-height:600px;overflow-y:auto"></div>
         </div>
-        <div class="card-body" id="pipeline-body"></div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recent Proposals</span></div>
+          <div class="card-body" id="proposals-body" style="max-height:400px;overflow-y:auto"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title">Pipeline Funnel (Detailed)</span></div>
+          <div class="card-body" id="pipeline-detail-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EARNINGS TAB -->
+    <div id="tab-earnings" class="tab-content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total Earned</div>
+          <div class="stat-value green" id="earn-total">$0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Net (After Fees)</div>
+          <div class="stat-value green" id="earn-net">$0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Platform Fees</div>
+          <div class="stat-value red" id="earn-fees">$0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Payments</div>
+          <div class="stat-value blue" id="earn-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Per Project</div>
+          <div class="stat-value yellow" id="earn-avg">$0</div>
+        </div>
       </div>
 
-      <!-- Top Gigs -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Top Scoring Gigs</span>
-          <span style="font-size:0.75rem;color:var(--muted)" id="gig-count">0 gigs</span>
+      <div class="main-grid">
+        <div class="card full-width">
+          <div class="card-header"><span class="card-title">Earnings (Last 30 Days)</span></div>
+          <div class="card-body">
+            <div class="earnings-chart" id="earnings-chart"></div>
+          </div>
         </div>
-        <div class="card-body" id="gigs-body" style="max-height:400px;overflow-y:auto"></div>
-      </div>
 
-      <!-- Proposals -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Recent Proposals</span>
+        <div class="card">
+          <div class="card-header"><span class="card-title">All Projects</span></div>
+          <div class="card-body" id="all-projects-body" style="max-height:400px;overflow-y:auto"></div>
         </div>
-        <div class="card-body" id="proposals-body" style="max-height:350px;overflow-y:auto"></div>
-      </div>
 
-      <!-- Config -->
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Configuration</span>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Payment History</span></div>
+          <div class="card-body" id="payments-body" style="max-height:400px;overflow-y:auto"></div>
         </div>
-        <div class="card-body" id="config-body"></div>
       </div>
+    </div>
 
-      <!-- Logs -->
-      <div class="card full-width">
+    <!-- DELIVERIES TAB -->
+    <div id="tab-deliveries" class="tab-content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Total Deliveries</div>
+          <div class="stat-value accent" id="del-total">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ready for Review</div>
+          <div class="stat-value yellow" id="del-review">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sent to Client</div>
+          <div class="stat-value green" id="del-sent">0</div>
+        </div>
+      </div>
+      <div class="main-grid">
+        <div class="card full-width">
+          <div class="card-header"><span class="card-title">All Deliveries</span></div>
+          <div class="card-body" id="deliveries-body" style="max-height:500px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS TAB -->
+    <div id="tab-logs" class="tab-content">
+      <div class="card">
         <div class="card-header">
           <span class="card-title">Autopilot Logs</span>
-          <span style="font-size:0.72rem;color:var(--muted)">last 50 lines</span>
+          <span style="font-size:0.68rem;color:var(--muted)">last 50 lines</span>
         </div>
         <div class="card-body">
-          <div class="logs-box" id="logs-body"></div>
+          <div class="logs-box" id="logs-body" style="max-height:600px"></div>
         </div>
       </div>
     </div>
@@ -358,21 +428,27 @@
       { key: 'LOST', label: 'Lost', color: '#ef4444' },
       { key: 'SKIPPED', label: 'Skipped', color: '#64748b' },
     ];
-
     const AUTONOMY_LABELS = { 1: 'Supervised', 2: 'Semi-Auto', 3: 'Full-Auto' };
+
+    let currentData = {};
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    }
 
     async function loadData() {
       try {
         const res = await fetch('/api/dashboard');
-        const data = await res.json();
-        render(data);
-      } catch (e) {
-        console.error('Failed to load dashboard data:', e);
-      }
+        currentData = await res.json();
+        render(currentData);
+      } catch (e) { console.error('Failed to load:', e); }
     }
 
     function render(data) {
-      // Daemon badge
+      // Daemon
       const badge = document.getElementById('daemon-badge');
       if (data.autopilot?.daemonRunning) {
         badge.className = 'daemon-badge running';
@@ -382,129 +458,258 @@
         badge.innerHTML = '<div class="daemon-dot"></div><span>STOPPED</span>';
       }
 
-      // Stats
-      const totalPipeline = data.pipeline?.length || 0;
-      document.getElementById('stat-pipeline').textContent = totalPipeline;
+      // Overview stats
+      document.getElementById('stat-pipeline').textContent = data.pipeline?.length || 0;
       document.getElementById('stat-proposals').textContent = data.stats?.proposalsSent || 0;
       document.getElementById('stat-won').textContent = data.stats?.proposalsWon || 0;
       document.getElementById('stat-earnings').textContent = '$' + (data.stats?.totalEarnings || 0).toLocaleString();
+      document.getElementById('stat-pipeline-value').textContent = '$' + (data.stats?.pipelineValue || 0).toLocaleString();
       document.getElementById('stat-seen').textContent = data.seenGigs || 0;
 
       const sent = data.stats?.proposalsSent || 0;
       const won = data.stats?.proposalsWon || 0;
       document.getElementById('stat-won-sub').textContent = sent > 0 ? `win rate: ${Math.round(won/sent*100)}%` : 'win rate: --';
 
-      // Autonomy badge
+      // Autonomy
       const level = data.autopilot?.autonomy_level || 1;
-      const abadge = document.getElementById('autonomy-badge');
-      abadge.className = `autonomy-badge autonomy-${level}`;
-      abadge.textContent = AUTONOMY_LABELS[level] || 'Supervised';
+      const ab = document.getElementById('autonomy-badge');
+      ab.className = `autonomy-badge autonomy-${level}`;
+      ab.textContent = AUTONOMY_LABELS[level] || 'Supervised';
 
-      // Pipeline funnel
+      renderPipeline(data);
+      renderGigs(data);
+      renderProjects(data);
+      renderConfig(data);
+      renderProposals(data);
+      renderEarnings(data);
+      renderDeliveries(data);
+      renderLogs(data);
+    }
+
+    function renderPipeline(data) {
       const pStats = data.pipelineStats || {};
       const maxCount = Math.max(1, ...STAGES.map(s => pStats[s.key] || 0));
-      let pipelineHTML = '';
+      let html = '';
       for (const stage of STAGES) {
         const count = pStats[stage.key] || 0;
         const pct = (count / maxCount * 100).toFixed(0);
-        pipelineHTML += `
-          <div class="pipeline-stage">
-            <div class="stage-name" style="min-width:120px">
-              <div class="stage-dot" style="background:${stage.color}"></div>
-              ${stage.label}
-            </div>
-            <div class="stage-bar">
-              <div class="stage-bar-fill" style="width:${pct}%;background:${stage.color}"></div>
-            </div>
-            <div class="stage-count" style="color:${count > 0 ? stage.color : 'var(--dim)'}">${count}</div>
-          </div>`;
+        html += `<div class="pipeline-stage">
+          <div class="stage-name"><div class="stage-dot" style="background:${stage.color}"></div>${stage.label}</div>
+          <div class="stage-bar"><div class="stage-bar-fill" style="width:${pct}%;background:${stage.color}"></div></div>
+          <div class="stage-count" style="color:${count > 0 ? stage.color : 'var(--dim)'}">${count}</div>
+        </div>`;
       }
-      document.getElementById('pipeline-body').innerHTML = pipelineHTML;
+      document.getElementById('pipeline-body').innerHTML = html;
+      document.getElementById('pipeline-detail-body').innerHTML = html;
 
-      // Top gigs (sorted by score)
+      // Full pipeline list
+      const pipeline = (data.pipeline || []).sort((a, b) => (b.score || 0) - (a.score || 0));
+      if (pipeline.length === 0) {
+        document.getElementById('full-pipeline-body').innerHTML = '<div class="empty-state">No gigs in pipeline. Run hustlebot autopilot run-now</div>';
+      } else {
+        let phtml = '';
+        for (const entry of pipeline) {
+          const g = entry.gig;
+          const score = entry.score || 0;
+          const scoreClass = score >= 80 ? 'score-high' : score >= 60 ? 'score-med' : 'score-low';
+          const platformClass = getPlatformClass(g.platform);
+          phtml += `<div class="gig-item">
+            <div class="gig-top">
+              <span class="gig-score ${scoreClass}">${score}%</span>
+              <span class="platform-badge ${platformClass}">${g.platform || '?'}</span>
+              <span class="status-badge status-${(entry.state || '').toLowerCase()}">${entry.state}</span>
+              <span class="gig-title">${esc(g.title || 'Untitled')}</span>
+            </div>
+            <div class="gig-meta">
+              <span>${g.budget || 'Budget TBD'}</span>
+              <span>${g.skills?.slice(0,3).join(', ') || ''}</span>
+            </div>
+          </div>`;
+        }
+        document.getElementById('full-pipeline-body').innerHTML = phtml;
+      }
+    }
+
+    function renderGigs(data) {
       const pipeline = (data.pipeline || []).sort((a, b) => (b.score || 0) - (a.score || 0));
       document.getElementById('gig-count').textContent = `${pipeline.length} gigs`;
       if (pipeline.length === 0) {
         document.getElementById('gigs-body').innerHTML = '<div class="empty-state">No gigs yet. Run hustlebot autopilot run-now</div>';
-      } else {
-        let gigsHTML = '';
-        for (const entry of pipeline.slice(0, 20)) {
-          const g = entry.gig;
-          const score = entry.score || 0;
-          const scoreClass = score >= 80 ? 'score-high' : score >= 60 ? 'score-med' : 'score-low';
-          const platform = (g.platform || 'unknown').toLowerCase();
-          const platformClass = platform.includes('upwork') ? 'platform-upwork' : platform.includes('twitter') ? 'platform-twitter' : 'platform-hackernews';
-          gigsHTML += `
-            <div class="gig-item">
-              <div class="gig-top">
-                <span class="gig-score ${scoreClass}">${score}%</span>
-                <span class="platform-badge ${platformClass}">${g.platform || '?'}</span>
-                <span class="gig-title">${escapeHtml(g.title || 'Untitled')}</span>
-              </div>
-              <div class="gig-meta">
-                <span>${g.budget || 'Budget TBD'}</span>
-                <span>${entry.state}</span>
-              </div>
-            </div>`;
-        }
-        document.getElementById('gigs-body').innerHTML = gigsHTML;
+        return;
       }
+      let html = '';
+      for (const entry of pipeline.slice(0, 15)) {
+        const g = entry.gig;
+        const score = entry.score || 0;
+        const scoreClass = score >= 80 ? 'score-high' : score >= 60 ? 'score-med' : 'score-low';
+        const platformClass = getPlatformClass(g.platform);
+        html += `<div class="gig-item">
+          <div class="gig-top">
+            <span class="gig-score ${scoreClass}">${score}%</span>
+            <span class="platform-badge ${platformClass}">${g.platform || '?'}</span>
+            <span class="gig-title">${esc(g.title || 'Untitled')}</span>
+          </div>
+          <div class="gig-meta"><span>${g.budget || 'Budget TBD'}</span><span>${entry.state}</span></div>
+        </div>`;
+      }
+      document.getElementById('gigs-body').innerHTML = html;
+    }
 
-      // Proposals
+    function renderProjects(data) {
+      const projects = data.projects || [];
+      if (projects.length === 0) {
+        document.getElementById('projects-body').innerHTML = '<div class="empty-state">No projects tracked yet</div>';
+        document.getElementById('all-projects-body').innerHTML = '<div class="empty-state">Use: hustlebot earnings add-project "Title" --amount 500</div>';
+        return;
+      }
+      let html = '';
+      for (const p of projects) {
+        html += `<div class="project-item">
+          <div class="project-top">
+            <span class="status-badge status-${p.status}">${p.status}</span>
+            <span class="project-title">${esc(p.gig_title)}</span>
+            <span class="project-amount">$${(p.agreed_amount || 0).toLocaleString()}</span>
+          </div>
+          <div class="project-meta">${p.platform || ''} &middot; ${p.client || ''} &middot; ${p.accepted_at ? new Date(p.accepted_at).toLocaleDateString() : ''}</div>
+        </div>`;
+      }
+      document.getElementById('projects-body').innerHTML = html;
+      document.getElementById('all-projects-body').innerHTML = html;
+    }
+
+    function renderEarnings(data) {
+      const payments = data.payments || [];
+      const total = payments.reduce((s, p) => s + (p.amount || 0), 0);
+      const net = payments.reduce((s, p) => s + (p.net_amount || 0), 0);
+      const fees = payments.reduce((s, p) => s + (p.platform_fee || 0), 0);
+      const avg = payments.length > 0 ? Math.round(total / payments.length) : 0;
+
+      document.getElementById('earn-total').textContent = '$' + total.toLocaleString();
+      document.getElementById('earn-net').textContent = '$' + net.toLocaleString();
+      document.getElementById('earn-fees').textContent = '$' + fees.toLocaleString();
+      document.getElementById('earn-count').textContent = payments.length;
+      document.getElementById('earn-avg').textContent = '$' + avg.toLocaleString();
+
+      // Chart - last 30 days
+      const chart = document.getElementById('earnings-chart');
+      const days = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const ds = d.toISOString().substring(0, 10);
+        const dayTotal = payments.filter(p => (p.received_at || '').substring(0, 10) === ds).reduce((s, p) => s + (p.net_amount || 0), 0);
+        days.push(dayTotal);
+      }
+      const maxDay = Math.max(1, ...days);
+      chart.innerHTML = days.map(d => {
+        const h = Math.max(2, (d / maxDay) * 100);
+        return `<div class="chart-bar ${d === 0 ? 'zero' : ''}" style="height:${h}%" title="$${d}"></div>`;
+      }).join('');
+
+      // Payments list
+      if (payments.length === 0) {
+        document.getElementById('payments-body').innerHTML = '<div class="empty-state">No payments recorded yet</div>';
+      } else {
+        let html = '';
+        for (const p of [...payments].reverse()) {
+          html += `<div class="project-item">
+            <div class="project-top">
+              <span class="platform-badge platform-${(p.platform || '').toLowerCase()}">${p.platform || '?'}</span>
+              <span class="project-title">${esc(p.description || p.gig_title || 'Payment')}</span>
+              <span class="project-amount">$${(p.net_amount || 0).toLocaleString()}</span>
+            </div>
+            <div class="project-meta">${new Date(p.received_at).toLocaleDateString()} &middot; Fee: $${p.platform_fee || 0}</div>
+          </div>`;
+        }
+        document.getElementById('payments-body').innerHTML = html;
+      }
+    }
+
+    function renderDeliveries(data) {
+      const deliveries = data.deliveries || [];
+      document.getElementById('del-total').textContent = deliveries.length;
+      document.getElementById('del-review').textContent = deliveries.filter(d => d.status === 'ready_for_review').length;
+      document.getElementById('del-sent').textContent = deliveries.filter(d => d.status === 'sent').length;
+
+      if (deliveries.length === 0) {
+        document.getElementById('deliveries-body').innerHTML = '<div class="empty-state">No deliveries yet. Use: hustlebot auto-deliver &lt;gig-id&gt;</div>';
+      } else {
+        let html = '';
+        for (const d of [...deliveries].reverse()) {
+          html += `<div class="delivery-item">
+            <div>
+              <div class="delivery-title">${esc(d.gig_title || d.delivery_id)}</div>
+              <div class="delivery-meta">
+                <span class="status-badge status-${(d.status || '').replace(/_/g, '-')}">${d.status}</span>
+                &middot; ${new Date(d.created_at).toLocaleDateString()}
+              </div>
+            </div>
+            <div class="delivery-files">${d.files_count || 0} files</div>
+          </div>`;
+        }
+        document.getElementById('deliveries-body').innerHTML = html;
+      }
+    }
+
+    function renderProposals(data) {
       const proposals = data.proposals || [];
       if (proposals.length === 0) {
         document.getElementById('proposals-body').innerHTML = '<div class="empty-state">No proposals yet</div>';
       } else {
-        let propHTML = '';
+        let html = '';
         for (const p of proposals.slice(-10).reverse()) {
-          const statusClass = p.status === 'won' ? 'status-won' : p.status === 'lost' ? 'status-lost' : 'status-sent';
-          propHTML += `
-            <div class="proposal-item">
-              <div class="proposal-title">${escapeHtml(p.gig_title || 'Untitled')}</div>
-              <div class="proposal-meta">
-                <span class="status-badge ${statusClass}">${p.status || 'draft'}</span>
-                ${p.platform || ''} &middot; ${p.tone || 'professional'} &middot; ${p.sent_at ? new Date(p.sent_at).toLocaleDateString() : ''}
-              </div>
-            </div>`;
+          const sc = p.status === 'won' ? 'status-won' : p.status === 'lost' ? 'status-lost' : 'status-sent';
+          html += `<div class="proposal-item">
+            <div class="proposal-title">${esc(p.gig_title || 'Untitled')}</div>
+            <div class="proposal-meta">
+              <span class="status-badge ${sc}">${p.status || 'draft'}</span>
+              ${p.platform || ''} &middot; ${p.sent_at ? new Date(p.sent_at).toLocaleDateString() : ''}
+            </div>
+          </div>`;
         }
-        document.getElementById('proposals-body').innerHTML = propHTML;
+        document.getElementById('proposals-body').innerHTML = html;
       }
+    }
 
-      // Config
+    function renderConfig(data) {
       const ap = data.autopilot || {};
-      const configRows = [
+      const rows = [
         ['Autonomy Level', AUTONOMY_LABELS[ap.autonomy_level] || 'Supervised'],
         ['Scan Interval', `Every ${ap.scan_interval_hours || 2}h`],
         ['Min Score (Propose)', `${ap.min_score_propose || 70}%`],
         ['Min Score (Auto-Submit)', `${ap.min_score_auto_submit || 85}%`],
         ['Max Proposals/Day', ap.max_proposals_per_day || 10],
+        ['Platforms', (data.profile?.platforms || []).join(', ') || 'Not configured'],
         ['Discord', ap.discord_webhook ? 'Connected' : 'Not configured'],
         ['Telegram', ap.telegram_bot_token ? 'Connected' : 'Not configured'],
-        ['Auto-Deliver Types', (ap.auto_deliver_types || []).join(', ')],
       ];
-      let configHTML = '';
-      for (const [k, v] of configRows) {
+      let html = '';
+      for (const [k, v] of rows) {
         const color = v === 'Connected' ? 'color:var(--green)' : v === 'Not configured' ? 'color:var(--dim)' : '';
-        configHTML += `<div class="config-row"><span class="config-key">${k}</span><span class="config-val" style="${color}">${v}</span></div>`;
+        html += `<div class="config-row"><span class="config-key">${k}</span><span class="config-val" style="${color}">${v}</span></div>`;
       }
-      document.getElementById('config-body').innerHTML = configHTML;
+      document.getElementById('config-body').innerHTML = html;
+    }
 
-      // Logs
+    function renderLogs(data) {
       const logs = data.logs || 'No logs yet.';
-      const coloredLogs = logs
+      document.getElementById('logs-body').innerHTML = logs
         .replace(/\[INFO\]/g, '<span class="log-info">[INFO]</span>')
         .replace(/\[WARN\]/g, '<span class="log-warn">[WARN]</span>')
         .replace(/\[ERROR\]/g, '<span class="log-error">[ERROR]</span>');
-      document.getElementById('logs-body').innerHTML = coloredLogs;
     }
 
-    function escapeHtml(str) {
-      const div = document.createElement('div');
-      div.textContent = str;
-      return div.innerHTML;
+    function getPlatformClass(platform) {
+      const p = (platform || '').toLowerCase();
+      if (p.includes('upwork')) return 'platform-upwork';
+      if (p.includes('twitter')) return 'platform-twitter';
+      if (p.includes('hackernews')) return 'platform-hackernews';
+      if (p.includes('freelancer')) return 'platform-freelancer';
+      if (p.includes('fiverr')) return 'platform-fiverr';
+      return 'platform-hackernews';
     }
 
-    // Initial load + auto-refresh every 30s
+    function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
     loadData();
     setInterval(loadData, 30000);
   </script>
