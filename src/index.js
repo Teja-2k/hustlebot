@@ -14,8 +14,9 @@ import { authPlatform } from './commands/auth.js';
 import { getConfig } from './utils/config.js';
 import { generateDelivery, packageDelivery, listDeliveries } from './engines/delivery-engine.js';
 import { trackProject, recordPayment, getEarningsStats, getProjects, updateProject, logTime } from './engines/payment-tracker.js';
+import { showWorkers, testClassify } from './commands/workers.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 const banner = chalk.hex('#FF6B00')(`
 ██╗  ██╗██╗   ██╗███████╗████████╗██╗     ███████╗██████╗  ██████╗ ████████╗
@@ -222,6 +223,24 @@ earnings
     console.log(chalk.green(`\n  ✅ Logged ${hours}h on "${project.gig_title}" (total: ${totalH}h)\n`));
   });
 
+// Workers command — show AI worker agents
+const workers = program
+  .command('workers')
+  .description('Show AI worker agents and test classification');
+
+workers
+  .command('list')
+  .description('List all available worker agents')
+  .action(showWorkers);
+
+workers
+  .command('test')
+  .description('Test gig classification with a sample title')
+  .argument('[title]', 'Gig title to classify', 'Build a portfolio website')
+  .action(async (title) => {
+    await testClassify(title);
+  });
+
 // Autopilot command group
 const autopilot = program
   .command('autopilot')
@@ -282,12 +301,17 @@ if (process.argv.length <= 2) {
   console.log(chalk.white('  10.') + chalk.gray(' hustlebot earnings add-payment ') + chalk.dim('→ Record payment'));
   console.log(chalk.white('  11.') + chalk.gray(' hustlebot earnings projects    ') + chalk.dim('→ All projects'));
   console.log();
-  console.log(chalk.hex('#FF6B00')('  🤖 Autopilot:'));
+  console.log(chalk.hex('#FF6B00')('  🤖 AI Worker Army:'));
   console.log(chalk.gray('  ─────────────────────────────────────────'));
-  console.log(chalk.white('  12.') + chalk.gray(' hustlebot autopilot config  ') + chalk.dim('→ Set up automation'));
-  console.log(chalk.white('  13.') + chalk.gray(' hustlebot autopilot start   ') + chalk.dim('→ Start the daemon'));
-  console.log(chalk.white('  14.') + chalk.gray(' hustlebot autopilot status  ') + chalk.dim('→ Pipeline overview'));
-  console.log(chalk.white('  15.') + chalk.gray(' hustlebot auth <platform>   ') + chalk.dim('→ Login for auto-submit'));
+  console.log(chalk.white('  12.') + chalk.gray(' hustlebot workers list      ') + chalk.dim('→ Show all worker agents'));
+  console.log(chalk.white('  13.') + chalk.gray(' hustlebot workers test      ') + chalk.dim('→ Test gig classification'));
+  console.log();
+  console.log(chalk.hex('#FF6B00')('  ⚙️  Autopilot:'));
+  console.log(chalk.gray('  ─────────────────────────────────────────'));
+  console.log(chalk.white('  14.') + chalk.gray(' hustlebot autopilot config  ') + chalk.dim('→ Set up automation'));
+  console.log(chalk.white('  15.') + chalk.gray(' hustlebot autopilot start   ') + chalk.dim('→ Start the daemon'));
+  console.log(chalk.white('  16.') + chalk.gray(' hustlebot autopilot status  ') + chalk.dim('→ Pipeline overview'));
+  console.log(chalk.white('  17.') + chalk.gray(' hustlebot auth <platform>   ') + chalk.dim('→ Login for auto-submit'));
   console.log();
   process.exit(0);
 }
