@@ -15,14 +15,26 @@ function getClient() {
 }
 
 export async function scoreGigMatch(gig, profile) {
-  const claude = getClient();
+  let claude;
+  try {
+    claude = getClient();
+  } catch (e) {
+    // No API key — use keyword-based scoring instead of crashing
+    return keywordScore(gig, profile);
+  }
 
-  const response = await claude.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 500,
-    messages: [{
-      role: 'user',
-      content: `You are a freelance opportunity scorer. Score this gig match from 0-100 and explain why in 1 line.
+  // If API has already failed this session, don't keep retrying
+  if (scoreGigMatch._apiFailed) {
+    return keywordScore(gig, profile);
+  }
+
+  try {
+    const response = await claude.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: `You are a freelance opportunity scorer. Score this gig match from 0-100 and explain why in 1 line.
 
 FREELANCER PROFILE:
 - Name: ${profile.name}
@@ -39,22 +51,113 @@ GIG:
 - Skills Required: ${gig.skills?.join(', ') || 'Not specified'}
 - Platform: ${gig.platform}
 
-Respond ONLY in this exact JSON format:
+Respond ONLY with valid JSON, nothing else:
 {"score": <number 0-100>, "reason": "<1 line explanation>", "estimated_hours": <number>, "suggested_rate": <number>}`
-    }]
-  });
+      }]
+    });
 
-  try {
     const text = response.content[0].text.trim();
+    // Try to extract JSON from the response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[0]);
+      // Validate the score is a reasonable number
+      if (typeof parsed.score === 'number' && parsed.score >= 0 && parsed.score <= 100) {
+        return {
+          score: parsed.score,
+          reason: parsed.reason || 'AI scored',
+          estimated_hours: parsed.estimated_hours || 10,
+          suggested_rate: parsed.suggested_rate || profile.rate_floor,
+        };
+      }
     }
   } catch (e) {
-    // fallback
+    // API call failed — mark as failed for this session to avoid spamming errors
+    if (e.status === 400 || e.status === 401 || e.status === 403) {
+      if (!scoreGigMatch._apiFailed) {
+        console.error(`  ⚠ API key issue (${e.status}) — switching to keyword scoring for this session`);
+        scoreGigMatch._apiFailed = true;
+      }
+    } else {
+      console.error(`  ⚠ AI scoring failed: ${e.message?.substring(0, 80)}`);
+    }
   }
 
-  return { score: 50, reason: 'Unable to score - review manually', estimated_hours: 10, suggested_rate: profile.rate_floor };
+  // Fallback: keyword-based scoring
+  return keywordScore(gig, profile);
+}
+
+/**
+ * Smart keyword-based scoring when AI is unavailable
+ */
+function keywordScore(gig, profile) {
+  const text = `${gig.title} ${gig.description || ''}`.toLowerCase();
+  const skills = profile.skills.map(s => s.toLowerCase());
+
+  let score = 20; // base
+  let reasons = [];
+
+  // Skill match (+10 per matching skill, max 40)
+  const matchedSkills = skills.filter(s => text.includes(s));
+  const skillBonus = Math.min(40, matchedSkills.length * 10);
+  score += skillBonus;
+  if (matchedSkills.length > 0) reasons.push(`${matchedSkills.length} skill matches`);
+
+  // Budget check (+15 if budget seems good)
+  const budgetText = (gig.budget || '').toLowerCase();
+  const budgetNums = budgetText.match(/\$?([\d,]+)/g)?.map(n => parseInt(n.replace(/[$,]/g, ''))) || [];
+  if (budgetNums.length > 0) {
+    const maxBudget = Math.max(...budgetNums);
+    if (maxBudget >= profile.rate_floor * 5) {
+      score += 15;
+      reasons.push('budget fits');
+    }
+  }
+
+  // Freshness bonus (+10 if recent)
+  if (gig.time_submitted || gig.scraped_at) {
+    const age = Date.now() - new Date(gig.time_submitted || gig.scraped_at).getTime();
+    if (age < 24 * 60 * 60 * 1000) {
+      score += 10;
+      reasons.push('posted today');
+    } else if (age < 3 * 24 * 60 * 60 * 1000) {
+      score += 5;
+      reasons.push('recent post');
+    }
+  }
+
+  // Low competition bonus (+10)
+  if (gig.bid_count !== undefined && gig.bid_count < 10) {
+    score += 10;
+    reasons.push('low competition');
+  }
+
+  // Freelance keyword bonus (+5)
+  const freelanceWords = ['freelancer', 'contract', 'part-time', 'remote', 'project-based', 'gig'];
+  if (freelanceWords.some(w => text.includes(w))) {
+    score += 5;
+    reasons.push('freelance-friendly');
+  }
+
+  // Penalty for full-time indicators
+  const fullTimeWords = ['full-time', 'fulltime', 'salary', 'equity', 'benefits', 'w-2', '401k', 'on-site only'];
+  if (fullTimeWords.some(w => text.includes(w))) {
+    score -= 20;
+    reasons.push('full-time indicator');
+  }
+
+  // Demo penalty
+  if (gig.is_demo) {
+    score = Math.min(score, 40);
+    reasons.push('demo data');
+  }
+
+  return {
+    score: Math.max(5, Math.min(95, score)),
+    reason: reasons.join(', ') || 'basic keyword match',
+    estimated_hours: 10,
+    suggested_rate: profile.rate_floor,
+  };
 }
 
 export async function generateProposal(gig, profile, options = {}) {

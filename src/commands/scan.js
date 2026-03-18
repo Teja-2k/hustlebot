@@ -52,7 +52,18 @@ export async function scanGigs(opts, config) {
           continue;
       }
 
-      spinner.succeed(`  ${platform}: found ${gigs.length} potential gigs`);
+      // Count live vs demo results
+      const liveCount = gigs.filter(g => !g.is_demo).length;
+      const demoCount = gigs.filter(g => g.is_demo).length;
+
+      if (liveCount > 0 && demoCount === 0) {
+        spinner.succeed(`  ${platform}: ${chalk.green(`${liveCount} LIVE gigs`)} found`);
+      } else if (liveCount > 0 && demoCount > 0) {
+        spinner.succeed(`  ${platform}: ${chalk.green(`${liveCount} live`)} + ${chalk.gray(`${demoCount} demo`)}`);
+      } else {
+        spinner.succeed(`  ${platform}: ${chalk.yellow(`${demoCount} demo results`)} (API blocked or no auth)`);
+      }
+
       allGigs.push(...gigs);
     } catch (err) {
       spinner.fail(`  ${platform}: error — ${err.message}`);
@@ -64,41 +75,32 @@ export async function scanGigs(opts, config) {
     return;
   }
 
-  // Score gigs with AI (if API key available)
+  // Score gigs with AI or keyword matching
   const apiKey = getApiKey();
-  if (apiKey && allGigs.length > 0) {
-    const scoreSpinner = ora(`  Scoring ${allGigs.length} gigs with AI...`).start();
+  const scoringMethod = apiKey ? 'AI' : 'keyword';
 
-    let scored = 0;
-    for (const gig of allGigs) {
-      try {
-        const result = await scoreGigMatch(gig, profile);
-        gig.match_score = result.score;
-        gig.match_reason = result.reason;
-        gig.estimated_hours = result.estimated_hours;
-        gig.suggested_rate = result.suggested_rate;
-        scored++;
-        scoreSpinner.text = `  Scoring gigs with AI... (${scored}/${allGigs.length})`;
-      } catch (err) {
-        gig.match_score = 50;
-        gig.match_reason = 'Score unavailable';
-      }
+  const scoreSpinner = ora(`  Scoring ${allGigs.length} gigs with ${scoringMethod}...`).start();
 
-      // Rate limit API calls
-      await new Promise(r => setTimeout(r, 300));
+  let scored = 0;
+  for (const gig of allGigs) {
+    try {
+      const result = await scoreGigMatch(gig, profile);
+      gig.match_score = result.score;
+      gig.match_reason = result.reason;
+      gig.estimated_hours = result.estimated_hours;
+      gig.suggested_rate = result.suggested_rate;
+      scored++;
+      scoreSpinner.text = `  Scoring gigs... (${scored}/${allGigs.length})`;
+    } catch (err) {
+      gig.match_score = 30;
+      gig.match_reason = 'Scoring failed';
     }
 
-    scoreSpinner.succeed(`  Scored ${scored} gigs with AI`);
-  } else {
-    // Assign basic keyword-match scores
-    allGigs.forEach(gig => {
-      const keywordMatches = keywords.filter(kw =>
-        (gig.title + ' ' + gig.description).toLowerCase().includes(kw.toLowerCase())
-      ).length;
-      gig.match_score = Math.min(90, 40 + keywordMatches * 15);
-      gig.match_reason = `${keywordMatches} keyword matches`;
-    });
+    // Rate limit API calls (only if using AI)
+    if (apiKey) await new Promise(r => setTimeout(r, 300));
   }
+
+  scoreSpinner.succeed(`  Scored ${scored} gigs with ${scoringMethod} scoring`);
 
   // Sort by score
   allGigs.sort((a, b) => (b.match_score || 0) - (a.match_score || 0));
@@ -114,9 +116,19 @@ export async function scanGigs(opts, config) {
   // Save for later use by propose command
   saveGigs(filtered);
 
-  // Display results
-  console.log(chalk.hex('#FF6B00')(`\n  ━━━ Found ${filtered.length} matching gigs ━━━\n`));
+  // Show data source summary
+  const liveTotal = filtered.filter(g => !g.is_demo).length;
+  const demoTotal = filtered.filter(g => g.is_demo).length;
 
+  console.log(chalk.hex('#FF6B00')(`\n  ━━━ Found ${filtered.length} matching gigs ━━━`));
+  if (demoTotal > 0) {
+    console.log(chalk.gray(`  📡 ${liveTotal} live results • ${demoTotal} demo results`));
+    console.log(chalk.gray(`  💡 Run 'hustlebot auth <platform>' for live data\n`));
+  } else {
+    console.log(chalk.green(`  📡 All ${liveTotal} results are LIVE data\n`));
+  }
+
+  // Display results table
   const table = new Table({
     head: [
       chalk.hex('#FF6B00')('#'),
@@ -133,13 +145,14 @@ export async function scanGigs(opts, config) {
   for (const gig of filtered.slice(0, limit)) {
     const scoreColor = gig.match_score >= 75 ? chalk.green :
       gig.match_score >= 50 ? chalk.yellow : chalk.red;
-    const demoTag = gig.is_demo ? chalk.gray(' [demo]') : '';
+    const demoTag = gig.is_demo ? chalk.red(' ⚡demo') : '';
+    const sourceTag = gig.source && gig.source !== 'demo' ? chalk.gray(` [${gig.source}]`) : '';
 
     table.push([
       chalk.white(gig.display_id),
       scoreColor(`${gig.match_score}%`),
-      chalk.cyan(gig.platform),
-      chalk.white(gig.title.substring(0, 48)) + demoTag,
+      platformColor(gig.platform),
+      chalk.white(gig.title.substring(0, 46)) + demoTag + sourceTag,
       chalk.gray(gig.budget?.substring(0, 18) || '—'),
     ]);
   }
@@ -150,10 +163,13 @@ export async function scanGigs(opts, config) {
   console.log(chalk.hex('#FF6B00')('\n  ── Top Matches ──\n'));
 
   for (const gig of filtered.slice(0, 3)) {
-    console.log(chalk.white(`  #${gig.display_id} `) + chalk.hex('#FF6B00')(gig.title));
+    console.log(chalk.white(`  #${gig.display_id} `) + chalk.hex('#FF6B00')(gig.title.substring(0, 70)));
     console.log(chalk.gray(`     ${gig.match_reason}`));
-    if (gig.estimated_hours) {
+    if (gig.estimated_hours && gig.suggested_rate) {
       console.log(chalk.gray(`     Est. ${gig.estimated_hours}hrs @ $${gig.suggested_rate}/hr = $${gig.estimated_hours * gig.suggested_rate}`));
+    }
+    if (gig.bid_count !== undefined) {
+      console.log(chalk.gray(`     ${gig.bid_count} bids so far`));
     }
     if (gig.url) {
       console.log(chalk.blue(`     ${gig.url}`));
@@ -164,4 +180,15 @@ export async function scanGigs(opts, config) {
   console.log(chalk.gray('  ─────────────────────────────────────'));
   console.log(chalk.white('  Next: ') + chalk.hex('#FF6B00')('hustlebot propose <#>') + chalk.gray(' to write a proposal'));
   console.log();
+}
+
+function platformColor(platform) {
+  switch (platform) {
+    case 'upwork': return chalk.hex('#6fda44')(platform);
+    case 'freelancer': return chalk.hex('#9b59b6')(platform);
+    case 'fiverr': return chalk.hex('#1dbf73')(platform);
+    case 'twitter': return chalk.hex('#1da1f2')(platform);
+    case 'hackernews': return chalk.hex('#ff6600')(platform);
+    default: return chalk.cyan(platform);
+  }
 }

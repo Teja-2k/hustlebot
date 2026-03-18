@@ -1,27 +1,29 @@
-import * as cheerio from 'cheerio';
 import chalk from 'chalk';
 
 const FREELANCER_API_URL = 'https://www.freelancer.com/api/projects/0.1/projects/active/';
 
 /**
  * Scan Freelancer.com for jobs matching keywords.
- * Uses their public projects API (no auth needed for basic listing).
- * Falls back to demo data if blocked.
+ * Uses their public projects API (no auth needed).
+ *
+ * IMPROVED: Adds relevance filtering, quality scoring, and deduplication.
  */
 export async function scanFreelancer(keywords, options = {}) {
   const jobs = [];
   const limit = options.limit || 20;
+  const minBudget = options.minBudget || 50; // Filter out spam/tiny jobs
 
   for (const keyword of keywords.slice(0, 5)) {
     try {
       const query = encodeURIComponent(keyword);
-      const url = `${FREELANCER_API_URL}?query=${query}&compact=true&job_details=true&limit=10&sort_field=time_submitted&project_types[]=fixed&project_types[]=hourly`;
+      const url = `${FREELANCER_API_URL}?query=${query}&compact=true&job_details=true&limit=15&sort_field=time_submitted&project_types[]=fixed&project_types[]=hourly&full_description=true`;
 
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
           'Accept': 'application/json',
-        }
+        },
+        signal: AbortSignal.timeout(15000),
       });
 
       if (!response.ok) {
@@ -34,27 +36,63 @@ export async function scanFreelancer(keywords, options = {}) {
       const projects = data?.result?.projects || [];
 
       for (const proj of projects) {
+        // QUALITY FILTERS
+        const description = proj.preview_description || proj.description || '';
+
+        // Skip if description is too short (likely spam)
+        if (description.length < 30) continue;
+
+        // Skip if budget is below minimum
+        const budgetMin = proj.budget?.minimum || 0;
+        const budgetMax = proj.budget?.maximum || 0;
+        const maxBudgetVal = Math.max(budgetMin, budgetMax);
+        if (maxBudgetVal > 0 && maxBudgetVal < minBudget && proj.type !== 'hourly') continue;
+
+        // Skip if too old (> 14 days)
+        if (proj.time_submitted) {
+          const age = Date.now() - (proj.time_submitted * 1000);
+          if (age > 14 * 24 * 60 * 60 * 1000) continue;
+        }
+
+        // RELEVANCE CHECK: Does the project actually match the keyword?
+        const searchText = `${proj.title || ''} ${description}`.toLowerCase();
+        const kwLower = keyword.toLowerCase();
+        const kwWords = kwLower.split(/\s+/);
+        const matchCount = kwWords.filter(w => searchText.includes(w)).length;
+
+        // Must match at least half the keyword words
+        if (matchCount < Math.ceil(kwWords.length / 2)) continue;
+
         const budget = proj.budget
           ? (proj.budget.minimum && proj.budget.maximum
               ? `$${proj.budget.minimum} - $${proj.budget.maximum} ${proj.type === 'hourly' ? '/hr' : 'Fixed'}`
-              : `$${proj.budget.minimum || proj.budget.maximum || '?'}`)
+              : `$${proj.budget.minimum || proj.budget.maximum || '?'} ${proj.type === 'hourly' ? '/hr' : 'Fixed'}`)
           : 'Not specified';
 
         const skills = (proj.jobs || []).map(j => j.name).filter(Boolean);
+
+        // Calculate a relevance quality score
+        const qualityScore = calculateQuality(proj, keyword, skills);
 
         jobs.push({
           id: `freelancer-${proj.id || Date.now()}-${Math.random().toString(36).substring(7)}`,
           platform: 'freelancer',
           title: proj.title || 'Untitled Project',
-          description: (proj.preview_description || proj.description || '').substring(0, 500),
+          description: description.substring(0, 500),
           budget,
           skills,
-          url: proj.seo_url ? `https://www.freelancer.com/projects/${proj.seo_url}` : `https://www.freelancer.com/projects/${proj.id}`,
+          url: proj.seo_url
+            ? `https://www.freelancer.com/projects/${proj.seo_url}`
+            : `https://www.freelancer.com/projects/${proj.id}`,
           search_keyword: keyword,
           scraped_at: new Date().toISOString(),
-          client_info: proj.owner ? `${proj.owner.username} (${proj.owner.reputation?.entire_history?.overall || '?'}★)` : null,
+          client_info: proj.owner
+            ? `${proj.owner.username} (${proj.owner.reputation?.entire_history?.overall || '?'}★)`
+            : null,
           bid_count: proj.bid_stats?.bid_count || 0,
           time_submitted: proj.time_submitted ? new Date(proj.time_submitted * 1000).toISOString() : null,
+          quality_score: qualityScore,
+          source: 'api',
         });
       }
 
@@ -63,67 +101,106 @@ export async function scanFreelancer(keywords, options = {}) {
       jobs.push(...getDemoFreelancerJobs(keyword));
     }
 
-    // Rate limiting
     await new Promise(r => setTimeout(r, 1500));
   }
 
-  // Dedupe by title
+  // Dedupe by title similarity
   const seen = new Set();
   const unique = jobs.filter(j => {
-    const key = j.title.toLowerCase();
+    const key = j.title.toLowerCase().substring(0, 50);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 
+  // Sort by quality score (highest first)
+  unique.sort((a, b) => (b.quality_score || 0) - (a.quality_score || 0));
+
   return unique.slice(0, limit);
 }
 
 /**
- * Demo/fallback jobs when API is blocked
+ * Calculate a quality/relevance score for a Freelancer project
+ */
+function calculateQuality(proj, keyword, skills) {
+  let score = 0;
+
+  // Budget quality (higher budget = better)
+  const maxBudget = Math.max(proj.budget?.minimum || 0, proj.budget?.maximum || 0);
+  if (maxBudget >= 1000) score += 20;
+  else if (maxBudget >= 500) score += 15;
+  else if (maxBudget >= 100) score += 10;
+  else score += 5;
+
+  // Competition (fewer bids = better opportunity)
+  const bidCount = proj.bid_stats?.bid_count || 0;
+  if (bidCount < 5) score += 15;
+  else if (bidCount < 15) score += 10;
+  else if (bidCount < 30) score += 5;
+
+  // Client reputation
+  const clientRating = proj.owner?.reputation?.entire_history?.overall || 0;
+  if (clientRating >= 4.5) score += 10;
+  else if (clientRating >= 4.0) score += 5;
+
+  // Freshness
+  if (proj.time_submitted) {
+    const ageHours = (Date.now() - (proj.time_submitted * 1000)) / (1000 * 60 * 60);
+    if (ageHours < 6) score += 15;
+    else if (ageHours < 24) score += 10;
+    else if (ageHours < 72) score += 5;
+  }
+
+  // Description quality
+  const descLen = (proj.preview_description || proj.description || '').length;
+  if (descLen > 200) score += 10;
+  else if (descLen > 100) score += 5;
+
+  // Skill relevance
+  const kwLower = keyword.toLowerCase();
+  if (skills.some(s => s.toLowerCase().includes(kwLower))) score += 10;
+
+  return score;
+}
+
+/**
+ * Demo fallback
  */
 function getDemoFreelancerJobs(keyword) {
   const demoJobs = [
     {
       title: 'Build AI-Powered Document Processing Pipeline',
-      description: 'Need a developer to build an automated document processing system using AI/ML. Should extract text from PDFs, classify documents, and route them to appropriate workflows. Python preferred, with experience in OCR and NLP.',
+      description: 'Need a developer to build an automated document processing system using AI/ML. Extract text from PDFs, classify documents, route to workflows. Python preferred.',
       budget: '$1,500 - $3,000 Fixed',
       skills: ['Python', 'Machine Learning', 'OCR', 'NLP', 'Document Processing'],
       bid_count: 12,
     },
     {
       title: 'Full-Stack Developer for SaaS Dashboard',
-      description: 'We are building a SaaS analytics dashboard and need a full-stack developer. React frontend with Node.js backend. Must integrate with Stripe for billing and have experience with real-time data visualization using charts.',
+      description: 'Building a SaaS analytics dashboard. React frontend with Node.js backend. Stripe billing. Real-time data visualization.',
       budget: '$50-80/hr',
       skills: ['React', 'Node.js', 'Stripe API', 'D3.js', 'PostgreSQL'],
       bid_count: 23,
     },
     {
       title: 'AI Chatbot Development with RAG Architecture',
-      description: 'Looking for an AI specialist to build a customer support chatbot using RAG. Must use vector databases for knowledge retrieval and support multi-turn conversations. Integration with our existing Zendesk system required.',
+      description: 'Build customer support chatbot using RAG with vector databases. Multi-turn conversations. Zendesk integration.',
       budget: '$2,000 - $5,000 Fixed',
       skills: ['AI', 'RAG', 'LangChain', 'Vector Database', 'Zendesk API'],
       bid_count: 8,
     },
     {
-      title: 'DevOps Engineer — Kubernetes + CI/CD Pipeline',
-      description: 'Set up production Kubernetes cluster on AWS EKS with full CI/CD pipeline. Need Helm charts, ArgoCD deployment, monitoring with Prometheus/Grafana, and automated scaling policies.',
-      budget: '$3,000 - $6,000 Fixed',
-      skills: ['Kubernetes', 'AWS', 'DevOps', 'Helm', 'ArgoCD'],
-      bid_count: 15,
-    },
-    {
       title: 'Telegram Bot for E-commerce Order Management',
-      description: 'Build a Telegram bot that integrates with Shopify for order management. Features: order status lookup, inventory alerts, automated customer notifications, and admin dashboard commands.',
+      description: 'Telegram bot integrating with Shopify. Order status, inventory alerts, customer notifications, admin commands.',
       budget: '$800 - $1,500 Fixed',
-      skills: ['Telegram Bot', 'Shopify API', 'Node.js', 'E-commerce', 'Automation'],
+      skills: ['Telegram Bot', 'Shopify API', 'Node.js', 'Automation'],
       bid_count: 19,
     },
     {
       title: 'Web Scraping + Data Pipeline for Market Research',
-      description: 'Need a web scraping expert to build automated data collection pipelines for market research. Multiple sources including LinkedIn, Glassdoor, and industry-specific sites. Must handle anti-bot measures and deliver clean structured data.',
+      description: 'Automated data collection from multiple sources including LinkedIn, Glassdoor. Must handle anti-bot measures.',
       budget: '$40-60/hr',
-      skills: ['Web Scraping', 'Python', 'Selenium', 'Data Pipeline', 'Proxy Management'],
+      skills: ['Web Scraping', 'Python', 'Selenium', 'Data Pipeline'],
       bid_count: 31,
     },
   ];
@@ -144,8 +221,9 @@ function getDemoFreelancerJobs(keyword) {
     url: 'https://www.freelancer.com/jobs/',
     search_keyword: keyword,
     scraped_at: new Date().toISOString(),
-    client_info: 'Demo data — connect Freelancer API for live results',
+    client_info: 'Demo data',
     is_demo: true,
     time_submitted: new Date().toISOString(),
+    source: 'demo',
   }));
 }
