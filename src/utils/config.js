@@ -5,6 +5,10 @@ import { homedir } from 'os';
 import YAML from 'yaml';
 
 const HUSTLEBOT_DIR = join(homedir(), '.hustlebot');
+
+export function getConfigDir() {
+  return HUSTLEBOT_DIR;
+}
 const PROFILE_PATH = join(HUSTLEBOT_DIR, 'profile.yaml');
 const GIGS_PATH = join(HUSTLEBOT_DIR, 'gigs.json');
 const PROPOSALS_PATH = join(HUSTLEBOT_DIR, 'proposals.json');

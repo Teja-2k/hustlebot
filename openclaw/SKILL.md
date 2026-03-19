@@ -1,33 +1,39 @@
 ---
 name: hustlebot
-version: 1.0.0
-description: Manage HustleBot — your automated freelance agent that scans gigs, writes proposals, submits them, delivers work, and tracks payments
+version: 3.0.0
+description: AI Product Factory — Autonomously research, build, deploy, and sell digital products. Also scans freelance platforms for gigs.
 author: saite
 tags:
-  - freelancing
+  - product-factory
   - automation
   - hustlebot
+  - products
+  - revenue
+  - deploy
+  - freelancing
   - gigs
-  - proposals
   - earnings
 triggers:
   - hustlebot
+  - factory
+  - product
+  - build product
+  - launch
+  - deploy
+  - revenue
+  - sell
   - gig
-  - gigs
   - freelance
-  - proposal
   - scan
   - earnings
   - autopilot
-  - deliver
-  - payment
 tools:
   - Bash
 ---
 
-# HustleBot — Automated Freelance Agent
+# HustleBot v3 — AI Product Factory
 
-You are managing HustleBot, a fully automated AI freelance system installed at `C:\Users\saite\Documents\MIllionaire\hustlebot`.
+You are managing HustleBot, an autonomous AI Product Factory that researches market demand, builds digital products, deploys them, markets them, and sells them — all while the user sleeps.
 
 ## Important Setup
 
@@ -41,113 +47,113 @@ The CLI entry point is:
 node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" <command>
 ```
 
-## Available Commands
+## 🏭 Product Factory Commands (PRIMARY)
 
-### Finding Work
 | Command | What It Does |
 |---------|-------------|
-| `scan` | Scan all 5 platforms (Upwork, Twitter, HackerNews, Freelancer, Fiverr) for matching gigs |
-| `scan -p <platform>` | Scan a specific platform (upwork/twitter/hackernews/freelancer/fiverr) |
-| `propose <number>` | Generate an AI-powered proposal for gig #number |
-| `propose <number> --tone bold` | Generate with a specific tone (professional/casual/bold) |
+| `factory` | Show factory dashboard (products, revenue, pipeline) |
+| `factory research` | Scan market for product opportunities (PH, Reddit, HN, GitHub) |
+| `factory build-one` | Interactively choose and build a product |
+| `factory build --max 3` | Build top 3 product ideas |
+| `factory deploy` | Deploy a built product (Vercel + Lemon Squeezy) |
+| `factory launch` | Full pipeline: research → build → deploy → market |
+| `factory launch --max 5` | Build and launch 5 products |
+| `factory catalog` | View all products with sales data |
+| `factory growth` | View and approve marketing posts |
+| `factory config` | Configure Vercel, GitHub, Lemon Squeezy keys |
+| `factory nightly` | Run nightly consolidation (what's selling, what's not) |
 
-### Delivering Work
+## 🔍 Freelance Scanner Commands
+
 | Command | What It Does |
 |---------|-------------|
-| `deliver <number>` | Create project workspace for a gig |
-| `auto-deliver <number>` | AI-generate complete project deliverables with code, README, and configs |
+| `scan` | Scan 5 platforms for matching gigs |
+| `scan -p <platform>` | Scan specific platform |
+| `propose <number>` | Generate AI proposal for gig |
+| `auto-deliver <number>` | Generate complete project deliverables |
 
-### Tracking Money
+## 💰 Earnings & Status
+
 | Command | What It Does |
 |---------|-------------|
-| `earnings stats` | Show revenue analytics (total/net/fees/conversion rate) |
-| `earnings stats --period month` | Filter stats by period (week/month/year/all) |
-| `earnings add-project "Title" --amount 500` | Track a won project |
-| `earnings add-payment 500 --platform upwork --fee 100` | Record a payment received |
-| `earnings projects` | List all tracked projects |
-| `earnings log-time <project-id> 4 "Built API"` | Log hours worked on a project |
+| `earnings stats` | Revenue analytics |
+| `earnings add-project "Title" --amount 500` | Track won project |
+| `earnings add-payment 500 --platform direct` | Record payment |
+| `status` | Terminal dashboard |
+| `dashboard` | Web UI at localhost:3456 |
 
-### Automation
+## ⚙️ Automation
+
 | Command | What It Does |
 |---------|-------------|
-| `autopilot config` | Configure autonomy level, notifications, thresholds |
-| `autopilot start` | Start the background scanning/proposing daemon |
-| `autopilot stop` | Stop the daemon |
-| `autopilot status` | Show pipeline state + daemon status |
-| `autopilot run-now` | Trigger an immediate scan + propose cycle |
-| `autopilot logs` | View recent activity logs |
-
-### Other
-| Command | What It Does |
-|---------|-------------|
-| `status` | Show terminal dashboard with pipeline overview |
-| `dashboard` | Launch the web dashboard at http://localhost:3456 |
-| `auth upwork` | Set up browser session for Upwork auto-submission |
-| `auth freelancer` | Set up browser session for Freelancer auto-submission |
-| `init` | Set up or update your freelancer profile |
+| `autopilot start` | Start background daemon |
+| `autopilot stop` | Stop daemon |
+| `autopilot status` | Pipeline overview |
+| `autopilot config` | Configure automation settings |
 
 ## How to Run Commands
 
-Always use this pattern:
 ```bash
 export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" <command> [args]
 ```
 
-### Examples
+### Key Examples
 
-**Scan for gigs:**
+**Launch the product factory (full pipeline):**
 ```bash
-export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" scan
+export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" factory launch
 ```
 
-**Scan only Upwork:**
+**Research product opportunities:**
 ```bash
-export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" scan -p upwork
+export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" factory research
 ```
 
-**Write a proposal for gig #1:**
+**Build a specific product:**
 ```bash
-export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" propose 1
+export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" factory build-one
 ```
 
-**Check earnings:**
+**Check factory status:**
 ```bash
-export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" earnings stats
-```
-
-**Start autopilot:**
-```bash
-export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" autopilot start
+export PATH="$PATH:/c/Program Files/nodejs" && node "C:/Users/saite/Documents/MIllionaire/hustlebot/src/index.js" factory
 ```
 
 ## Typical Workflows
 
-### "Find me gigs" / "Scan for work"
-1. Run `scan` to find gigs across all platforms
-2. Report the top 5 gigs with their scores, platforms, and budgets
-3. Ask if the user wants proposals written for any of them
+### "Build me a product" / "Make money"
+1. Run `factory research` to find hot opportunities
+2. Run `factory build-one` to choose and build a product
+3. Run `factory deploy` to push it live
+4. Run `factory growth` to approve marketing posts
 
-### "Write a proposal" / "Apply to gig #X"
-1. Run `propose <number>` to generate an AI proposal
-2. Show the proposal text to the user
-3. Ask if they want to submit it or modify the tone
+### "Launch everything on autopilot"
+1. Run `factory config` to set up Vercel + Lemon Squeezy keys
+2. Run `factory launch --max 5` for full pipeline
+3. Products are built, deployed, and marketed automatically
 
-### "How much have I earned?" / "Show earnings"
-1. Run `earnings stats` to get the full breakdown
-2. Report total earned, net after fees, effective hourly rate, and pipeline value
+### "What's selling?"
+1. Run `factory` for the dashboard
+2. Run `factory catalog` for detailed product list
+3. Run `factory nightly` for performance analysis
 
-### "Start autopilot" / "Run everything automatically"
-1. Run `autopilot config` if not configured yet
-2. Run `autopilot start` to begin the daemon
-3. Confirm it's running with `autopilot status`
+## Product Types HustleBot Can Build
 
-### "Deliver work for gig #X"
-1. Run `auto-deliver <number>` to generate complete project files
-2. Report what files were created and the delivery status
+| Type | Price Range | Build Time | Example |
+|------|-----------|-----------|---------|
+| PDF Guide | $9-49 | 15-30 min | "Claude Code Masterclass" |
+| Notion Template | $5-29 | 10-20 min | "Solopreneur OS" |
+| Website Template | $29-99 | 30-60 min | "LaunchPage Templates" |
+| Web Tool / SaaS | $0-99/mo | 1-3 hours | "SEO Analyzer" |
+| Chrome Extension | $0-49/mo | 1-2 hours | "PageGist AI Summary" |
+| API Service | $9-199/mo | 1-2 hours | "AI Content API" |
+| Starter Kit | $49-299 | 2-4 hours | "SaaSKit Boilerplate" |
+| Full Web App | $99-499 | 4-8 hours | "AI Resume Builder" |
+| Prompt Library | $9-39 | 20-40 min | "500+ Developer Prompts" |
+| AI Tool | $19-199/mo | 2-6 hours | "LeadMagnet AI" |
 
 ## Response Style
-- Be concise and action-oriented
-- Always show the actual output from commands
-- When reporting gigs, format them as a clean list with scores
-- When reporting earnings, highlight the key numbers
-- Proactively suggest next steps (e.g., after scanning, suggest writing proposals for top gigs)
+- Lead with action — show commands and results
+- When reporting products, include: name, state, price, revenue
+- Proactively suggest building more products when catalog is small
+- Always mention the factory dashboard for overview

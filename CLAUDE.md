@@ -1,85 +1,89 @@
-# HustleBot — Claude Code Development Guide
+# HustleBot v3 — AI Product Factory
 
 ## What Is This
-HustleBot is a fully automated AI freelance agent — a CLI + web dashboard that scans 5 platforms for gigs, writes proposals, auto-submits via browser automation, manages client communication, generates deliverables, and tracks earnings. Designed to run 24/7 as an autonomous money-making system.
+HustleBot is an autonomous AI Product Factory that researches market demand, builds digital products using Claude Code, deploys them to Vercel, connects payments via Lemon Squeezy, and markets them on social media — all while you sleep. It also retains the original freelance scanning capability as a secondary income stream.
+
+## Architecture Overview
+```
+Market Research → Product Ideas → Claude Code Builds → Quality Check → Deploy → Market → Sell → Iterate
+```
 
 ## Tech Stack
 - Node.js 18+ (ES modules)
 - Commander.js (CLI framework)
 - Inquirer.js (interactive prompts)
 - Cheerio (web scraping)
-- Anthropic SDK (AI-powered proposals, scoring, delivery, client comms)
-- Puppeteer-core (browser automation for Upwork/Freelancer)
+- Anthropic SDK (AI-powered scoring, proposals)
+- Claude Code (headless mode for product building)
+- Puppeteer-core (browser automation)
 - Express (web dashboard server)
-- node-schedule (cron-like daemon scheduling)
+- node-schedule (heartbeat + daemon scheduling)
 - Chalk + Boxen + cli-table3 (terminal UI)
 - Conf (persistent config storage)
+- Vercel CLI (deployment)
+- Lemon Squeezy API (payments)
 
 ## Project Structure
 ```
 src/
-  index.js              — CLI entry point, all command registration
+  index.js              — CLI entry point (v3.0.0)
+  factory/              — 🏭 PRODUCT FACTORY (v3 core)
+    factory.js          — Main orchestrator (research→build→deploy→sell pipeline)
+    product-catalog.js  — Product lifecycle management (IDEA→LIVE→KILLED)
+    market-research.js  — Scans PH/Reddit/HN/GitHub for opportunities
+    product-builder.js  — Spawns Claude Code to build products + quality checks
+    deployer.js         — Vercel deploy + GitHub push + Lemon Squeezy payments
+    growth-engine.js    — Twitter/Reddit/ProductHunt marketing automation
+    heartbeat.js        — Proactive 30-min checks + nightly consolidation
   commands/
+    factory.js          — Factory CLI (research/build/deploy/launch/catalog/growth/config)
     init.js             — Profile setup wizard
-    scan.js             — Orchestrates all 5 scanners, displays results
+    scan.js             — Orchestrates all 5 scanners
     propose.js          — AI proposal generation
-    deliver.js          — Project scaffolding (manual)
-    status.js           — Terminal dashboard display
-    autopilot.js        — Autopilot config/start/stop/status/logs
-    auth.js             — Platform authentication (opens Chrome for login)
-    dashboard.js        — Launches web dashboard server
-  scanners/
-    upwork.js           — Upwork job scraping
-    freelancer.js       — Freelancer.com API scanner
-    fiverr.js           — Fiverr demand signal detection
-    twitter.js          — Twitter/X opportunity scanning
-    hackernews.js       — HackerNews hiring thread scanning
-  engines/
-    ai.js               — Claude API for scoring + proposals
-    client-ai.js        — AI client communication (classify, reply, review)
-    delivery-engine.js  — AI-powered code generation + ZIP packaging
-    payment-tracker.js  — Earnings, projects, payments tracking
-  automation/
-    daemon.js           — Background autopilot scheduler
-    pipeline.js         — Gig state machine (DISCOVERED → PAID)
-    submitter.js        — Proposal submission (browser + clipboard fallback)
-    delivery-runner.js  — Auto-delivery orchestration
-    dedup.js            — Gig deduplication across cycles
-    autopilot-config.js — Config loader for autopilot.yaml
-  browser/
-    chrome.js           — Puppeteer browser management, persistent sessions
-    upwork-submit.js    — Upwork auto-proposal submission
-    freelancer-submit.js — Freelancer auto-bid submission
-    message-monitor.js  — Client message monitoring + reply
-  notifications/
-    notify.js           — Notification dispatcher (Discord + Telegram)
-    discord.js          — Discord webhook sender
-    telegram.js         — Telegram Bot API sender
-  dashboard/
-    server.js           — Express API server
-    public/index.html   — Single-page web dashboard
-  utils/
-    config.js           — Profile, gigs, proposals persistence
-    logger.js           — File + console logging
+    deliver.js          — Project scaffolding
+    status.js           — Terminal dashboard
+    autopilot.js        — Autopilot daemon management
+    auth.js             — Platform authentication
+    dashboard.js        — Web dashboard server
+    workers.js          — AI worker agent listing
+  workers/              — Specialized AI agents for freelance delivery
+    base-agent.js       — Foundation class (spawns Claude Code headless)
+    router.js           — Gig classifier & agent dispatcher
+    quality-runner.js   — Quality check orchestrator
+    web-agent/          — Websites, React, dashboards
+    bot-agent/          — Telegram/Discord/Slack bots
+    data-agent/         — Scrapers, ETL, pipelines
+    script-agent/       — Automation, APIs, CLI tools
+    design-agent/       — Graphics via AI image APIs
+    write-agent/        — Content, documentation
+    fix-agent/          — Bug fixes, debugging
+  scanners/             — 5 freelance platform scanners
+  engines/              — AI scoring, proposals, delivery, payments
+  automation/           — Daemon, pipeline state machine, submitter
+  browser/              — Puppeteer automation
+  notifications/        — Discord + Telegram alerts
+  dashboard/            — Express web UI
+  utils/                — Config, logging
 ```
 
 ## Key Design Decisions
 - Everything stores in ~/.hustlebot/ as YAML/JSON files
-- Demo/fallback data is baked into scanners for when APIs are unavailable
-- The AI engine uses claude-sonnet-4-20250514 for cost efficiency
-- All commands are self-contained and can work independently
-- Browser automation uses persistent Chrome profile to maintain login sessions
-- Puppeteer falls back to clipboard+URL when browser automation fails
-- Dashboard auto-refreshes every 30 seconds from the API
+- Products built in ~/.hustlebot/products/<product-id>/
+- Claude Code spawned in headless mode with domain-specific prompts
+- Market research pulls live data from Reddit, HN, GitHub APIs
+- Products go through quality gates before deployment
+- Marketing posts require approval by default (safety)
+- Heartbeat runs every 30 min; nightly consolidation at 2 AM
+- Product lifecycle: IDEA → PLANNED → BUILDING → TESTING → READY → DEPLOYING → LIVE
 
 ## When Adding Features
-- New scanners go in src/scanners/ and get imported in scan.js AND daemon.js
-- New commands go in src/commands/ and get registered in index.js
-- New notification types get added to notify.js NOTIFICATION_TEMPLATES
-- Keep terminal output beautiful — use chalk colors consistently (primary: #FF6B00)
-- Always include demo/fallback data for scanners that need network access
+- Factory components go in src/factory/
+- New product types: add to ProductTypes in product-catalog.js AND requirements in product-builder.js
+- New CLI subcommands: add to src/commands/factory.js AND register in index.js
+- New market research sources: add scan function in market-research.js
+- Keep terminal output beautiful — use chalk colors (primary: #FF6B00)
 - Test with: node src/index.js <command>
-- On Windows, prefix bash commands with: export PATH="$PATH:/c/Program Files/nodejs"
+- On Windows: export PATH="$PATH:/c/Program Files/nodejs"
 
 ## Code Style
 - ES modules (import/export)
@@ -87,4 +91,3 @@ src/
 - Descriptive variable names
 - Comments for non-obvious logic
 - Error handling with user-friendly messages
-- Dynamic imports for optional heavy dependencies (puppeteer-core)

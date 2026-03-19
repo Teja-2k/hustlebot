@@ -15,8 +15,9 @@ import { getConfig } from './utils/config.js';
 import { generateDelivery, packageDelivery, listDeliveries } from './engines/delivery-engine.js';
 import { trackProject, recordPayment, getEarningsStats, getProjects, updateProject, logTime } from './engines/payment-tracker.js';
 import { showWorkers, testClassify } from './commands/workers.js';
+import registerFactoryCommand from './commands/factory.js';
 
-const VERSION = '0.2.0';
+const VERSION = '3.0.0';
 
 const banner = chalk.hex('#FF6B00')(`
 ██╗  ██╗██╗   ██╗███████╗████████╗██╗     ███████╗██████╗  ██████╗ ████████╗
@@ -31,7 +32,7 @@ const program = new Command();
 
 program
   .name('hustlebot')
-  .description(chalk.gray('AI agent that finds freelance gigs, writes winning proposals, and helps deliver work'))
+  .description(chalk.gray('AI Product Factory — Build, deploy, and sell digital products autonomously'))
   .version(VERSION)
   .hook('preAction', () => {
     console.log(banner);
@@ -276,6 +277,9 @@ autopilot
   .description('Trigger an immediate scan + propose cycle')
   .action(autopilotRunNow);
 
+// Factory command — the Product Factory (v3 core)
+registerFactoryCommand(program);
+
 // Default: show help if no command
 if (process.argv.length <= 2) {
   console.log(banner);
@@ -284,34 +288,34 @@ if (process.argv.length <= 2) {
     { padding: { left: 2, right: 2, top: 0, bottom: 0 }, borderColor: '#FF6B00', borderStyle: 'round' }
   ));
   console.log();
-  console.log(chalk.hex('#FF6B00')('  Quick Start:'));
+  console.log(chalk.hex('#FF6B00')('  🏭 Product Factory (v3):'));
   console.log(chalk.gray('  ─────────────────────────────────────────'));
-  console.log(chalk.white('   1.') + chalk.gray(' hustlebot init          ') + chalk.dim('→ Set up your profile'));
-  console.log(chalk.white('   2.') + chalk.gray(' hustlebot scan          ') + chalk.dim('→ Find gigs (5 platforms)'));
-  console.log(chalk.white('   3.') + chalk.gray(' hustlebot propose <#>   ') + chalk.dim('→ AI-write a proposal'));
-  console.log(chalk.white('   4.') + chalk.gray(' hustlebot deliver <#>   ') + chalk.dim('→ Scaffold workspace'));
-  console.log(chalk.white('   5.') + chalk.gray(' hustlebot auto-deliver  ') + chalk.dim('→ AI-generate full project'));
-  console.log(chalk.white('   6.') + chalk.gray(' hustlebot status        ') + chalk.dim('→ Terminal dashboard'));
-  console.log(chalk.white('   7.') + chalk.gray(' hustlebot dashboard     ') + chalk.dim('→ Web UI dashboard'));
+  console.log(chalk.white('   1.') + chalk.gray(' hustlebot factory           ') + chalk.dim('→ Factory dashboard'));
+  console.log(chalk.white('   2.') + chalk.gray(' hustlebot factory research  ') + chalk.dim('→ Find product opportunities'));
+  console.log(chalk.white('   3.') + chalk.gray(' hustlebot factory build-one ') + chalk.dim('→ Build a product'));
+  console.log(chalk.white('   4.') + chalk.gray(' hustlebot factory launch    ') + chalk.dim('→ Full pipeline (research→build→deploy→sell)'));
+  console.log(chalk.white('   5.') + chalk.gray(' hustlebot factory deploy    ') + chalk.dim('→ Deploy to Vercel + Lemon Squeezy'));
+  console.log(chalk.white('   6.') + chalk.gray(' hustlebot factory catalog   ') + chalk.dim('→ View all products'));
+  console.log(chalk.white('   7.') + chalk.gray(' hustlebot factory growth    ') + chalk.dim('→ Marketing queue'));
+  console.log(chalk.white('   8.') + chalk.gray(' hustlebot factory config    ') + chalk.dim('→ Set up Vercel/Stripe keys'));
   console.log();
-  console.log(chalk.hex('#FF6B00')('  💰 Earnings:'));
+  console.log(chalk.hex('#FF6B00')('  🔍 Freelance Scanner:'));
   console.log(chalk.gray('  ─────────────────────────────────────────'));
-  console.log(chalk.white('   8.') + chalk.gray(' hustlebot earnings stats       ') + chalk.dim('→ Revenue analytics'));
-  console.log(chalk.white('   9.') + chalk.gray(' hustlebot earnings add-project ') + chalk.dim('→ Track a won gig'));
-  console.log(chalk.white('  10.') + chalk.gray(' hustlebot earnings add-payment ') + chalk.dim('→ Record payment'));
-  console.log(chalk.white('  11.') + chalk.gray(' hustlebot earnings projects    ') + chalk.dim('→ All projects'));
+  console.log(chalk.white('   9.') + chalk.gray(' hustlebot scan             ') + chalk.dim('→ Find gigs (5 platforms)'));
+  console.log(chalk.white('  10.') + chalk.gray(' hustlebot propose <#>      ') + chalk.dim('→ AI-write a proposal'));
+  console.log(chalk.white('  11.') + chalk.gray(' hustlebot auto-deliver <#> ') + chalk.dim('→ AI-generate deliverables'));
   console.log();
-  console.log(chalk.hex('#FF6B00')('  🤖 AI Worker Army:'));
+  console.log(chalk.hex('#FF6B00')('  💰 Earnings & Status:'));
   console.log(chalk.gray('  ─────────────────────────────────────────'));
-  console.log(chalk.white('  12.') + chalk.gray(' hustlebot workers list      ') + chalk.dim('→ Show all worker agents'));
-  console.log(chalk.white('  13.') + chalk.gray(' hustlebot workers test      ') + chalk.dim('→ Test gig classification'));
+  console.log(chalk.white('  12.') + chalk.gray(' hustlebot earnings stats   ') + chalk.dim('→ Revenue analytics'));
+  console.log(chalk.white('  13.') + chalk.gray(' hustlebot status           ') + chalk.dim('→ Terminal dashboard'));
+  console.log(chalk.white('  14.') + chalk.gray(' hustlebot dashboard        ') + chalk.dim('→ Web UI dashboard'));
   console.log();
-  console.log(chalk.hex('#FF6B00')('  ⚙️  Autopilot:'));
+  console.log(chalk.hex('#FF6B00')('  ⚙️  Automation:'));
   console.log(chalk.gray('  ─────────────────────────────────────────'));
-  console.log(chalk.white('  14.') + chalk.gray(' hustlebot autopilot config  ') + chalk.dim('→ Set up automation'));
-  console.log(chalk.white('  15.') + chalk.gray(' hustlebot autopilot start   ') + chalk.dim('→ Start the daemon'));
-  console.log(chalk.white('  16.') + chalk.gray(' hustlebot autopilot status  ') + chalk.dim('→ Pipeline overview'));
-  console.log(chalk.white('  17.') + chalk.gray(' hustlebot auth <platform>   ') + chalk.dim('→ Login for auto-submit'));
+  console.log(chalk.white('  15.') + chalk.gray(' hustlebot autopilot start  ') + chalk.dim('→ Start daemon'));
+  console.log(chalk.white('  16.') + chalk.gray(' hustlebot factory nightly  ') + chalk.dim('→ Nightly consolidation'));
+  console.log(chalk.white('  17.') + chalk.gray(' hustlebot init             ') + chalk.dim('→ Set up profile'));
   console.log();
   process.exit(0);
 }
